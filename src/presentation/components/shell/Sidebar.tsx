@@ -29,6 +29,7 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
     <nav
       aria-label="Main"
       data-testid="sidebar"
+      data-nav="sidebar"
       className="fixed inset-y-0 left-0 z-30 hidden w-(--sidebar-w) flex-col gap-4 border-r border-divider bg-surface px-3 py-4 md:flex"
     >
       <Tooltip>

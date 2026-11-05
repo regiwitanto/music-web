@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `specs/001-app-shell/spec.md` (approved 2026-11-05, G1 and G2 passed)
 
-**Status**: **Approved by the owner, 2026-11-05 (Gate G3 passed).** No application code has been written. Tasks approved 2026-11-05 in [tasks.md](tasks.md) (108 tasks, Gate G4 passed). `/speckit-analyze` has run four times. The fourth run (2026-11-05) reported 0 CRITICAL, 0 HIGH and one MEDIUM (M1), and M1 was remediated the same day. Next stage: owner approval to start implementation.
+**Status**: **Implemented 2026-11-06** (T001–T105 and T108 done). Automated gates G5–G7 and G9 pass with the gaps recorded in [docs/quality-gates.md](../../docs/quality-gates.md); T106 (manual screen-reader pass) and T107 (visual review) are pending the owner; the feature is not yet accepted (G13). Plan approved 2026-11-05 (Gate G3); tasks approved 2026-11-05 (Gate G4, 108 tasks).
 
 **Owner review, 2026-11-05 (pre-G3).**
 - **Approved:** the overall architecture, the seven additional dependencies, the routing strategy and the neutral favicon.

@@ -1,9 +1,16 @@
 import type { Metadata } from 'next'
+import { TestFault } from '@/presentation/testing/TestFault'
+import { AppearanceSettings } from '@/presentation/components/settings/AppearanceSettings'
 
 export const metadata: Metadata = { title: 'Settings' }
 
-// The Appearance section is added in US4 (T082–T083). No other Settings sections
-// are in scope for 001 (FR-024).
+// Appearance is the only Settings section in scope for 001 (FR-024).
 export default function SettingsPage() {
-  return <h1 tabIndex={-1}>Settings</h1>
+  return (
+    <>
+      <h1 tabIndex={-1}>Settings</h1>
+      <TestFault />
+      <AppearanceSettings />
+    </>
+  )
 }

@@ -107,10 +107,11 @@ src/
     explore/…  library/…  settings/…
   presentation/
     components/ui/              # shadcn-generated primitives
-    components/shell/           # Sidebar, BottomNav, AppShell, PlayerBar
+    components/shell/           # Sidebar, BottomNav, AppShell, SkipLink, RouteFocus, PlayerDock (idle; 008 replaces its content)
+    components/settings/        # AppearanceSettings
     components/player/          # MiniPlayer, NowPlaying, QueuePanel, SeekBar
     components/media/           # TrackRow, MediaCard, ArtworkImage, sections
-    components/states/          # EmptyState, ErrorState, NothingHereYet, DelayedSkeleton, AsyncView
+    components/states/          # EmptyState, ErrorState, NothingHereYet, DelayedSkeleton, AsyncView, PlaceholderView, HoldGate
     hooks/
     lib/cn.ts                   # class-name helper (shadcn)
     testing/                    # test hooks, flag-gated by NEXT_PUBLIC_TEST_HOOKS (001 ui-shell.md §7)
@@ -421,4 +422,4 @@ D2 stores local audio in IndexedDB through Dexie. This is the policy for quota (
 | ADR-010 | **Accepted (D5).** The public display name comes from one constant, `APP_DISPLAY_NAME`, used in `<title>`, metadata, the manifest, About and export file names. | "Metrolist Web Reimagined" is an internal working title only, and third-party branding must never reach public UI. | A later rename touches one constant plus the icons. |
 | ADR-007 | No unofficial music sources | ToS, legal and breakage risk ([metrolist-audit.md §12](metrolist-audit.md#12-risks-of-unofficial-music-apis)). | Catalog is limited to mock, sample and owned files until a compliant provider exists. |
 | ADR-008 | Fixed Home section order | Predictability; lesson from the Metrolist audit. | Less sense of novelty. |
-| ADR-009 | Theme mirrored to `localStorage`, applied by a tiny inline script before paint | Prevents a light/dark flash, since IndexedDB is async. | Two copies of the theme setting; Dexie stays authoritative and rewrites the mirror. Confirm the inline-script approach against the bundled Next docs. |
+| ADR-009 | Theme mirrored to `localStorage`, applied by a tiny inline script before paint | Prevents a light/dark flash, since IndexedDB is async. | Two copies of the theme setting; Dexie stays authoritative and rewrites the mirror. Confirmed (bundled `preventing-flash-before-hydration.md`); System resolved in CSS; Appearance selection shown from first paint via `<html>`-attribute CSS and a pre-hydration selection script (001 research R15). |

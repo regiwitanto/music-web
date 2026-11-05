@@ -92,3 +92,23 @@ export function buildThemeBootstrapScript(): string {
     '}catch(e){}})()'
   )
 }
+
+/**
+ * The pre-hydration selection script (research R15 layer 2): an ES5 IIFE placed right
+ * after the Appearance fieldsets. It reads the validated `<html>` attributes and checks
+ * the matching radios. It never writes attributes or storage and never throws.
+ */
+export function buildAppearanceSelectionScript(): string {
+  return (
+    '(function(){try{' +
+    `var T=${JSON.stringify(THEMES)},A=${JSON.stringify(ACCENTS)};` +
+    'var d=document.documentElement;' +
+    'var t=d.getAttribute("data-theme"),a=d.getAttribute("data-accent");' +
+    `if(T.indexOf(t)<0)t=${JSON.stringify(DEFAULT_APPEARANCE.theme)};` +
+    `if(A.indexOf(a)<0)a=${JSON.stringify(DEFAULT_APPEARANCE.accent)};` +
+    'var i,n=document.querySelectorAll("input[name=theme],input[name=accent]");' +
+    'for(i=0;i<n.length;i++){var e=n[i];' +
+    'if((e.name==="theme"&&e.value===t)||(e.name==="accent"&&e.value===a))e.checked=true}' +
+    '}catch(e){}})()'
+  )
+}

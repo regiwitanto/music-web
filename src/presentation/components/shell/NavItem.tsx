@@ -74,7 +74,7 @@ export function NavItem({ destination, variant, collapsed = false }: NavItemProp
           {...currentProps}
           onClick={onClick}
           className={cn(
-            'flex h-10 w-full items-center gap-3 rounded-sm px-3 text-body-strong transition-colors duration-(--motion-fast) ease-(--motion-fast-ease) hover:bg-text/6',
+            'flex h-10 w-full items-center gap-3 rounded-sm px-3 text-body-strong transition-[background-color] duration-(--motion-fast) ease-(--motion-fast-ease) hover:bg-text/6',
             'max-lg:justify-center max-lg:px-0',
             collapsed && 'justify-center px-0',
             tone,

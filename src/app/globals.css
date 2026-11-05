@@ -235,6 +235,22 @@
   [tabindex="-1"]:focus:not(:focus-visible) {
     outline: none;
   }
+
+  /* Skip link (FR-026): visually hidden until focused, then shown top-left. */
+  .skip-link {
+    position: fixed;
+    top: 8px;
+    left: 8px;
+    z-index: 100;
+    padding: 8px 16px;
+    border-radius: 6px;
+    background-color: var(--raised);
+    color: var(--text);
+    transform: translateY(-200%);
+  }
+  .skip-link:focus-visible {
+    transform: none;
+  }
 }
 
 /* Reduced motion (FR-032): transitions become instant and animations stop
@@ -248,5 +264,106 @@
     animation-duration: 0ms !important;
     animation-iteration-count: 1 !important;
     scroll-behavior: auto !important;
+  }
+}
+
+/* ---------- Appearance controls (R15 layer 1) ----------
+   The selected indicator is drawn from the <html> attributes, not from :checked,
+   so it is correct from first paint, before any script or hydration. */
+
+@layer components {
+  .appearance-option input {
+    appearance: none;
+    margin: 0;
+    flex-shrink: 0;
+    width: 20px;
+    height: 20px;
+    border-radius: 9999px;
+    border: 2px solid var(--border-strong);
+    background: transparent;
+    cursor: pointer;
+  }
+  .appearance-swatch {
+    display: inline-block;
+    flex-shrink: 0;
+    width: 28px;
+    height: 28px;
+    border-radius: 9999px;
+    border: 1px solid var(--border-strong);
+  }
+  [data-option-theme="light"] .appearance-swatch { background: linear-gradient(135deg, #FFFFFF 50%, #111114 50%); }
+  [data-option-theme="dark"] .appearance-swatch { background: linear-gradient(135deg, #121214 50%, #F2F2F5 50%); }
+  [data-option-theme="oled"] .appearance-swatch { background: linear-gradient(135deg, #000000 50%, #F2F2F5 50%); }
+  [data-option-theme="system"] .appearance-swatch { background: linear-gradient(135deg, #FFFFFF 50%, #121214 50%); }
+  [data-option-accent="violet"] { --sw-l: #6D3FE0; --sw-d: #A78BFA; }
+  [data-option-accent="blue"] { --sw-l: #1F5FD6; --sw-d: #7AA7FF; }
+  [data-option-accent="teal"] { --sw-l: #0B7C78; --sw-d: #2DD4BF; }
+  [data-option-accent="green"] { --sw-l: #1F7A35; --sw-d: #4ADE80; }
+  [data-option-accent="amber"] { --sw-l: #A15C00; --sw-d: #FBBF24; }
+  [data-option-accent="orange"] { --sw-l: #C2410C; --sw-d: #FB923C; }
+  [data-option-accent="rose"] { --sw-l: #C0265B; --sw-d: #FB7199; }
+  [data-option-accent="red"] { --sw-l: #C42B2B; --sw-d: #F87171; }
+  [data-option-accent] .appearance-swatch { background: var(--sw-l); }
+  :root[data-theme="dark"] [data-option-accent] .appearance-swatch,
+  :root[data-theme="oled"] [data-option-accent] .appearance-swatch { background: var(--sw-d); }
+  @media (prefers-color-scheme: dark) { :root[data-theme="system"] [data-option-accent] .appearance-swatch { background: var(--sw-d); } }
+  :root[data-theme="light"] [data-option-theme="light"] input,
+  :root[data-theme="dark"] [data-option-theme="dark"] input,
+  :root[data-theme="oled"] [data-option-theme="oled"] input,
+  :root[data-theme="system"] [data-option-theme="system"] input,
+  :root[data-accent="violet"] [data-option-accent="violet"] input,
+  :root[data-accent="blue"] [data-option-accent="blue"] input,
+  :root[data-accent="teal"] [data-option-accent="teal"] input,
+  :root[data-accent="green"] [data-option-accent="green"] input,
+  :root[data-accent="amber"] [data-option-accent="amber"] input,
+  :root[data-accent="orange"] [data-option-accent="orange"] input,
+  :root[data-accent="rose"] [data-option-accent="rose"] input,
+  :root[data-accent="red"] [data-option-accent="red"] input
+  {
+    border-color: var(--accent);
+    background: radial-gradient(circle, var(--accent) 0 5px, transparent 6px);
+  }
+}
+
+/* ---------- Delayed skeleton (R9, FR-035) ---------- */
+@keyframes reveal {
+  to {
+    opacity: 1;
+    visibility: visible;
+  }
+}
+@layer components {
+  .skeleton-reveal {
+    opacity: 0;
+    /* Hidden from assistive technology too until the delay has passed. */
+    visibility: hidden;
+    animation: reveal 0s linear 150ms forwards;
+  }
+}
+
+/* Forced colors (Windows High Contrast): the UA strips author backgrounds, so keep
+   the swatches and draw the selected radio with system colours. */
+@media (forced-colors: active) {
+  .appearance-option input,
+  .appearance-swatch {
+    forced-color-adjust: none;
+  }
+  .appearance-option input {
+    border-color: CanvasText;
+  }
+  :root[data-theme="light"] [data-option-theme="light"] input,
+  :root[data-theme="dark"] [data-option-theme="dark"] input,
+  :root[data-theme="oled"] [data-option-theme="oled"] input,
+  :root[data-theme="system"] [data-option-theme="system"] input,
+  :root[data-accent="violet"] [data-option-accent="violet"] input,
+  :root[data-accent="blue"] [data-option-accent="blue"] input,
+  :root[data-accent="teal"] [data-option-accent="teal"] input,
+  :root[data-accent="green"] [data-option-accent="green"] input,
+  :root[data-accent="amber"] [data-option-accent="amber"] input,
+  :root[data-accent="orange"] [data-option-accent="orange"] input,
+  :root[data-accent="rose"] [data-option-accent="rose"] input,
+  :root[data-accent="red"] [data-option-accent="red"] input {
+    border-color: Highlight;
+    background: radial-gradient(circle, Highlight 0 5px, transparent 6px);
   }
 }

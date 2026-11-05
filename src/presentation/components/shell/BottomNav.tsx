@@ -18,6 +18,7 @@ export function BottomNav() {
     <nav
       aria-label="Main"
       data-testid="bottom-nav"
+      data-nav="bottom"
       className="fixed inset-x-0 bottom-0 z-30 border-t border-divider bg-surface pb-(--safe-bottom) md:hidden"
     >
       <ul className="flex h-(--bottom-nav-h)">
