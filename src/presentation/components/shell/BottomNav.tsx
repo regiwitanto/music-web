@@ -1,6 +1,8 @@
 'use client'
 
+import { useEffect } from 'react'
 import { DESTINATIONS } from '@/application/shell'
+import { recordShellMount } from '@/presentation/testing/shell-mounts'
 import { NavItem } from './NavItem'
 
 /**
@@ -9,6 +11,9 @@ import { NavItem } from './NavItem'
  * before <main> in the DOM so the tab order is skip link → navigation → content.
  */
 export function BottomNav() {
+  // Test-only mount counter (ui-shell.md §7.1); a no-op in normal builds.
+  useEffect(() => recordShellMount('bottomNav'), [])
+
   return (
     <nav
       aria-label="Main"

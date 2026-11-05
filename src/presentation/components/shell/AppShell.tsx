@@ -1,8 +1,9 @@
 'use client'
 
-import { type ReactNode, useState } from 'react'
+import { type ReactNode, useEffect, useState } from 'react'
 import { TooltipProvider } from '@/presentation/components/ui/tooltip'
 import { cn } from '@/presentation/lib/cn'
+import { recordShellMount } from '@/presentation/testing/shell-mounts'
 import { BottomNav } from './BottomNav'
 import { Sidebar } from './Sidebar'
 import { ThemeSync } from './ThemeSync'
@@ -17,6 +18,9 @@ import { ThemeSync } from './ThemeSync'
  */
 export function AppShell({ children }: { children: ReactNode }) {
   const [sidebarCollapsed, setSidebarCollapsed] = useState(false)
+
+  // Test-only mount counter (ui-shell.md §7.1); a no-op in normal builds.
+  useEffect(() => recordShellMount('shell'), [])
 
   return (
     <TooltipProvider>

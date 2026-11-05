@@ -62,7 +62,7 @@ Only features with a spec are listed. Statuses: **Passed** (with an evidence lin
 | G6 Lint | Not run | — |
 | G7 Unit | Not run | Script not yet created |
 | G8 Integration | Not run | Script not yet created |
-| G9 E2E | Not run | Script not yet created |
+| G9 E2E | **Partial** (in progress) | 2026-11-06, test-hooks production build, `pnpm test:e2e tests/e2e/routes.spec.ts tests/e2e/nav.spec.ts`: Chromium and Firefox (desktop and mobile projects) 130 passed, 0 failed, 22 skipped by design, stable across three runs. **WebKit: pending, not run.** The browser cannot launch on the development host (missing system library `libavif16`). Suites for US3–US6 are not written yet |
 | G10 Accessibility | Not run | — |
 | G11 Visual review | Not run | — |
 | G12 Regression | N/A until code exists | — |

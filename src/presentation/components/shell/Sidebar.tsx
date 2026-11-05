@@ -1,9 +1,11 @@
 'use client'
 
 import { Disc3, PanelLeftClose, PanelLeftOpen } from 'lucide-react'
+import { useEffect } from 'react'
 import { APP_DISPLAY_NAME, DESTINATIONS } from '@/application/shell'
 import { Tooltip, TooltipContent, TooltipTrigger } from '@/presentation/components/ui/tooltip'
 import { cn } from '@/presentation/lib/cn'
+import { recordShellMount } from '@/presentation/testing/shell-mounts'
 import { NavItem } from './NavItem'
 
 type SidebarProps = {
@@ -19,6 +21,9 @@ type SidebarProps = {
  */
 export function Sidebar({ collapsed, onToggle }: SidebarProps) {
   const toggleLabel = collapsed ? 'Expand sidebar' : 'Collapse sidebar'
+
+  // Test-only mount counter (ui-shell.md §7.1); a no-op in normal builds.
+  useEffect(() => recordShellMount('sidebar'), [])
 
   return (
     <nav

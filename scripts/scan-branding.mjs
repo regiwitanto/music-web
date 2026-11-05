@@ -5,8 +5,11 @@
  * 1. Forbidden third-party names must not appear in the built pages, the client
  *    bundle, public assets or the source.
  * 2. A normal production build (made WITHOUT NEXT_PUBLIC_TEST_HOOKS) must not
- *    contain any test-hook global. Against a test-hooks build this check fails
- *    by design.
+ *    contain any test-hook global in its compiled code. Source maps (*.map) are
+ *    skipped for this check only: they embed the original source text, so they
+ *    always contain the names even when the code was removed, and server source
+ *    maps are not served (owner decision 2026-11-06). Against a test-hooks build
+ *    this check fails by design.
  *
  * Exits 1 on any match, or when .next/ is missing.
  */
@@ -68,7 +71,8 @@ const sourceFiles = [...walk(join(root, 'src'))]
 const brandHits = scan([...builtPages, ...staticFiles, ...publicFiles, ...sourceFiles], FORBIDDEN_NAMES, {
   caseInsensitive: true,
 })
-const hookHits = scan([...staticFiles, ...serverFiles], TEST_HOOK_STRINGS, { caseInsensitive: false })
+const compiledFiles = [...staticFiles, ...serverFiles].filter((f) => !f.endsWith('.map'))
+const hookHits = scan(compiledFiles, TEST_HOOK_STRINGS, { caseInsensitive: false })
 
 for (const hit of brandHits) console.error(`forbidden name "${hit.needle}" in ${hit.file}`)
 for (const hit of hookHits) console.error(`test hook "${hit.needle}" in ${hit.file} (is this a test-hooks build?)`)
@@ -79,5 +83,5 @@ if (brandHits.length > 0 || hookHits.length > 0) {
   process.exit(1)
 }
 console.log(
-  `scan-branding: OK. ${scanned} files checked for forbidden names; ${staticFiles.length + serverFiles.length} build files checked for test hooks.`,
+  `scan-branding: OK. ${scanned} files checked for forbidden names; ${compiledFiles.length} compiled build files checked for test hooks.`,
 )

@@ -1,6 +1,7 @@
 'use client'
 
 import Link from 'next/link'
+import type { MouseEvent } from 'react'
 import { usePathname } from 'next/navigation'
 import { activeDestination, classifyPath } from '@/application/shell'
 import type { Destination } from '@/domain/navigation'
@@ -23,7 +24,23 @@ type NavItemProps = {
  */
 export function NavItem({ destination, variant, collapsed = false }: NavItemProps) {
   const pathname = usePathname() ?? '/'
-  const current = activeDestination(classifyPath(pathname)) === destination.id
+  const classification = classifyPath(pathname)
+  const current = activeDestination(classification) === destination.id
+
+  /**
+   * Re-selecting the current destination (FR-010; research R8). On its root page:
+   * scroll to the top (instantly under reduced motion) and never navigate or move
+   * focus; already at the top, do nothing. On a nested page under it, the link
+   * navigates to the root as usual.
+   */
+  const onClick = (event: MouseEvent<HTMLAnchorElement>) => {
+    if (classification.kind !== 'root' || classification.destination !== destination.id) return
+    if (event.button !== 0 || event.metaKey || event.ctrlKey || event.shiftKey || event.altKey) return
+    event.preventDefault()
+    if (window.scrollY <= 0) return
+    const reduceMotion = window.matchMedia('(prefers-reduced-motion: reduce)').matches
+    window.scrollTo({ top: 0, behavior: reduceMotion ? 'instant' : 'smooth' })
+  }
   const Icon = NAV_ICONS[destination.id]
 
   const icon = (
@@ -37,6 +54,7 @@ export function NavItem({ destination, variant, collapsed = false }: NavItemProp
       <Link
         href={destination.href}
         {...currentProps}
+        onClick={onClick}
         className={cn(
           'flex min-h-11 min-w-11 flex-1 flex-col items-center justify-center gap-0.5 px-1 text-caption',
           tone,
@@ -54,6 +72,7 @@ export function NavItem({ destination, variant, collapsed = false }: NavItemProp
         <Link
           href={destination.href}
           {...currentProps}
+          onClick={onClick}
           className={cn(
             'flex h-10 w-full items-center gap-3 rounded-sm px-3 text-body-strong transition-colors duration-(--motion-fast) ease-(--motion-fast-ease) hover:bg-text/6',
             'max-lg:justify-center max-lg:px-0',

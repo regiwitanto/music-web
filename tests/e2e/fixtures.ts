@@ -127,6 +127,15 @@ export async function freezeSkeletonAnimations(page: Page): Promise<void> {
   })
 }
 
+/**
+ * Waits until React has hydrated the shell. The AppShell mount effect, which only
+ * runs after hydration commits, records `shell` in the test-hooks build. Use it
+ * before mutating the DOM or relying on client-side handlers.
+ */
+export async function waitForHydration(page: Page): Promise<void> {
+  await page.waitForFunction(() => ((window as TestWindow).__SHELL_MOUNTS__?.shell ?? 0) >= 1)
+}
+
 /** Reads the per-component shell mount counters (ui-shell.md §7.1). */
 export async function readMounts(page: Page): Promise<TestWindow['__SHELL_MOUNTS__']> {
   return page.evaluate(() => (window as TestWindow).__SHELL_MOUNTS__)
