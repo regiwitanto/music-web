@@ -162,14 +162,12 @@ test.describe('target sizes and names (V9)', () => {
     }
   })
 
-  test('icon-only items and the collapse toggle have names and tooltips', async ({ page, browserName }) => {
+  test('icon-only nav items have names and tooltips', async ({ page }) => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await page.goto('/')
     await waitForHydration(page)
-    const toggle = page.getByRole('button', { name: 'Collapse sidebar' })
-    await toggle.click()
-    const expand = page.getByRole('button', { name: 'Expand sidebar' })
-    await expect(expand).toBeVisible()
+    await page.getByRole('button', { name: 'Collapse sidebar' }).click()
+    await expect(page.getByRole('button', { name: 'Expand sidebar' })).toBeVisible()
     await movePointerAway(page)
     const nav = page.getByRole('navigation', { name: 'Main' })
     for (const label of ['Home', 'Explore', 'Library', 'Settings']) {
@@ -179,9 +177,19 @@ test.describe('target sizes and names (V9)', () => {
       await expect(page.getByRole('tooltip', { name: label })).toBeVisible()
       await movePointerAway(page)
     }
-    // KNOWN ISSUE: in WebKit the collapse toggle's tooltip intermittently does not open
-    // after the toggle was clicked (2 of 5 runs failed). Verified in Chromium and Firefox only.
-    if (browserName === 'webkit') return
+  })
+
+  test('the collapse toggle has a name and a tooltip', async ({ page, browserName }) => {
+    // KNOWN ISSUE (docs/quality-gates.md, G9 gap 3): in WebKit the toggle's tooltip
+    // intermittently does not open after the toggle was clicked (2 of 5 runs failed),
+    // cause not found. Reported as skipped, not passed, until it is fixed.
+    test.fixme(browserName === 'webkit', 'Toggle tooltip intermittently fails to open in WebKit; cause not found')
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/')
+    await waitForHydration(page)
+    await page.getByRole('button', { name: 'Collapse sidebar' }).click()
+    const expand = page.getByRole('button', { name: 'Expand sidebar' })
+    await expect(expand).toBeVisible()
     // Approach with real pointer movement: Radix ignores a hover that never leaves the clicked trigger.
     await movePointerAway(page)
     const box = await expand.boundingBox()

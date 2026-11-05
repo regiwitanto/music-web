@@ -6,15 +6,15 @@
 
 **Rule:** a gate is **Passed** only when its evidence is recorded: a link, command output, a report file, or a dated owner sign-off. Without evidence, the status is **Not run** or **Blocked**. Agents never mark a gate passed on the owner's behalf.
 
-**Tooling status (2026-11-05).** Only `pnpm lint` exists. These scripts **do not exist yet**:
+**Tooling status (2026-11-06).** The `001-app-shell` implementation (roadmap Phase 01 deliverables) added every gate script:
+- `pnpm lint`
 - `pnpm typecheck`
-- `pnpm test`
-- `pnpm test:e2e`
-- the CI workflow
-- axe integration
-- the branding scan
+- `pnpm test` / `pnpm test:coverage`
+- `pnpm test:e2e`, with axe integration via `@axe-core/playwright`
+- `pnpm scan:branding`
+- the CI workflow, `.github/workflows/ci.yml`
 
-They are introduced by the `001-app-shell` plan (roadmap Phase 01 deliverables). Gates G5–G12 cannot pass until they exist.
+**The CI workflow has not run yet:** the repository has no remote. Until it runs, gate evidence comes from local runs only.
 
 ## 1. Gate definitions
 
@@ -61,8 +61,8 @@ Only features with a spec are listed. Statuses: **Passed** (with an evidence lin
 | G5 TypeScript | **Passed** 2026-11-06 | `pnpm typecheck` (`tsc --noEmit`) exit 0 |
 | G6 Lint | **Passed** 2026-11-06 | `pnpm lint` exit 0, including `tests/lint/layers.test.ts` (layer-boundary proof) |
 | G7 Unit | **Passed** 2026-11-06 | `pnpm test:coverage`: 19 files, 341 tests passed. `src/domain/**`: 100% lines, 97.56% branches (threshold 90%). Token-contrast suite (V15/T8) included |
-| G8 Integration | Not run | No separate integration suite is defined for 001; component tests (jsdom) run under `pnpm test` |
-| G9 E2E | **Passed with noted gaps** 2026-11-06 | `NEXT_PUBLIC_TEST_HOOKS=1 pnpm build && pnpm test:e2e`, all six projects (Chromium, Firefox, WebKit × desktop and mobile): 444 passed, 0 failed, 138 skipped by design (desktop-only or mobile-only tests). Normal build: `pnpm build` with the flag unset, then `pnpm scan:branding` OK (163 source files, 352 compiled files). Re-run 2026-11-06 after the `/code-review` fixes (forced-colors fallback, error and retry focus, skeleton status, error logging, nav `data-nav`, `useMediaQuery` cache). **Gaps:** (1) V12 asserts the body background, `<html>` attributes and the active item's colour on 10 cold loads per theme with JS held, but does **not** sample screenshot pixels (R14 known risk). (2) V24 "200% zoom" is emulated with a 640 px viewport, not a real browser zoom. (3) The "Expand sidebar" tooltip assertion is skipped on WebKit because it was intermittently failing (2 of 5 runs), cause not found. See the V1–V25 map below |
+| G8 Integration | **Passed (store scope)** 2026-11-06 | 001's only store-level code is the settings store over the appearance repository port. Its suite `tests/unit/settings-store.test.ts` (with `InMemoryAppearanceRepository`, 5 tests) is one of the 19 files in the G7 `pnpm test:coverage` run, all passing (re-run 2026-11-06: 19 files, 341 tests passed). No IndexedDB repository, use-case or provider code exists in 001, so the repository and provider-contract suites are **N/A** until 002 and 003 |
+| G9 E2E | **Passed with noted gaps** 2026-11-06 | `NEXT_PUBLIC_TEST_HOOKS=1 pnpm build && pnpm test:e2e`, all six projects (Chromium, Firefox, WebKit × desktop and mobile): 446 passed, 0 failed, 142 skipped (re-run 2026-11-06 after the tooltip-test split below; 141 by design as desktop-only or mobile-only tests, plus 1 `test.fixme` on WebKit desktop). The earlier run reported 444 passed, 138 skipped. Normal build: `pnpm build` with the flag unset, then `pnpm scan:branding` OK (163 source files, 352 compiled files). Re-run 2026-11-06 after the `/code-review` fixes (forced-colors fallback, error and retry focus, skeleton status, error logging, nav `data-nav`, `useMediaQuery` cache). **Gaps:** (1) V12 asserts the body background, `<html>` attributes and the active item's colour on 10 cold loads per theme with JS held, but does **not** sample screenshot pixels (R14 known risk). (2) V24 "200% zoom" is emulated with a 640 px viewport, not a real browser zoom. (3) The "Expand sidebar" toggle tooltip is unverified on WebKit: it intermittently failed to open (2 of 5 runs), cause not found. Until 2026-11-06 the test exited early on WebKit and was counted as **passed**; it is now a separate test marked `test.fixme` on WebKit (`tests/e2e/a11y.spec.ts`, "the collapse toggle has a name and a tooltip"), so it reports as skipped (the WebKit-desktop toggle test shows as skipped; Chromium and Firefox desktop pass it). The WebKit defect is **not fixed**. The nav-item tooltips are still checked on all engines. Open defect against FR-031 on WebKit, to be fixed or accepted by the owner at G13. See the V1–V25 map below |
 | G10 Accessibility | **Partial** 2026-11-06 | Automated: axe, 0 serious or critical issues on `/`, `/explore`, `/library`, `/settings`, `/library/liked`, `/settings/x1` and `/radio` in Light, Dark and OLED, on all six projects (`tests/e2e/a11y.spec.ts`). **Manual screen-reader pass (T106): not done, pending the owner.** Checklist below |
 | G11 Visual review | Not run | Pending the owner (T107). Checklist below |
 | G12 Regression | N/A | First feature; nothing earlier to regress |
@@ -73,7 +73,7 @@ Only features with a spec are listed. Statuses: **Passed** (with an evidence lin
 | V | Covered by | Notes |
 |---|---|---|
 | V1 | `nav.spec.ts` (width sweep 320–1440, sidebar forms, tooltip, wide screens 1600/1920) | Full |
-| V2 | `nav.spec.ts` (collapse/expand), `a11y.spec.ts` (tooltips) | Expand-toggle tooltip skipped on WebKit |
+| V2 | `nav.spec.ts` (collapse/expand), `a11y.spec.ts` (tooltips) | **Partial:** expand-toggle tooltip `test.fixme` on WebKit (G9 gap 3) |
 | V3 | `routes.spec.ts` V3, `dock.spec.ts` (mount counters after 10 navigations) | Full |
 | V4–V6 | `routes.spec.ts` | Full |
 | V7 | `a11y.spec.ts` (skip link, tab order, Enter to h1, Settings by keyboard) | Full |
