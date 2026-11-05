@@ -1,4 +1,4 @@
-import { axeScan, expect, isVisuallyHidden, movePointerAway, noHorizontalScroll, readMounts, seedAppearance, test, waitForHydration } from './fixtures'
+import { axeScan, expect, isVisuallyHidden, movePointerAway, noHorizontalScroll, openCollapsedSidebar, readMounts, seedAppearance, test, waitForHydration } from './fixtures'
 
 /*
  * Story 3 — keyboard and screen-reader users can do everything
@@ -163,12 +163,7 @@ test.describe('target sizes and names (V9)', () => {
   })
 
   test('icon-only nav items have names and tooltips', async ({ page }) => {
-    await page.setViewportSize({ width: 1440, height: 900 })
-    await page.goto('/')
-    await waitForHydration(page)
-    await page.getByRole('button', { name: 'Collapse sidebar' }).click()
-    await expect(page.getByRole('button', { name: 'Expand sidebar' })).toBeVisible()
-    await movePointerAway(page)
+    await openCollapsedSidebar(page)
     const nav = page.getByRole('navigation', { name: 'Main' })
     for (const label of ['Home', 'Explore', 'Library', 'Settings']) {
       const link = nav.getByRole('link', { name: label })
@@ -179,24 +174,32 @@ test.describe('target sizes and names (V9)', () => {
     }
   })
 
-  test('the collapse toggle has a name and a tooltip', async ({ page, browserName }) => {
-    // KNOWN ISSUE (docs/quality-gates.md, G9 gap 3): in WebKit the toggle's tooltip
-    // intermittently does not open after the toggle was clicked (2 of 5 runs failed),
-    // cause not found. Reported as skipped, not passed, until it is fixed.
-    test.fixme(browserName === 'webkit', 'Toggle tooltip intermittently fails to open in WebKit; cause not found')
-    await page.setViewportSize({ width: 1440, height: 900 })
+  test('the collapse toggle shows its tooltip before it is ever clicked', async ({ page }) => {
+    // Expanded state: "Collapse sidebar" is icon-only, so it needs a tooltip too (FR-031).
     await page.goto('/')
     await waitForHydration(page)
-    await page.getByRole('button', { name: 'Collapse sidebar' }).click()
-    const expand = page.getByRole('button', { name: 'Expand sidebar' })
-    await expect(expand).toBeVisible()
-    // Approach with real pointer movement: Radix ignores a hover that never leaves the clicked trigger.
     await movePointerAway(page)
-    const box = await expand.boundingBox()
-    if (!box) throw new Error('Expand toggle has no box')
-    await page.mouse.move(box.x + box.width / 2 - 30, box.y + box.height / 2, { steps: 5 })
-    await page.mouse.move(box.x + box.width / 2, box.y + box.height / 2, { steps: 5 })
+    await page.getByRole('button', { name: 'Collapse sidebar' }).hover()
+    await expect(page.getByRole('tooltip', { name: 'Collapse sidebar' })).toBeVisible()
+  })
+
+  test('the collapse toggle keeps its tooltip after toggling, in both states', async ({ page, browserName }) => {
+    // KNOWN DEFECT (docs/quality-gates.md, G9 gap 3; FR-031): in WebKit, once the toggle has
+    // been clicked its tooltip often fails to open again, by hover or by keyboard focus
+    // (diagnostic 2026-11-06: 1/8 to 4/8 passes after a click vs 8/8 before any click).
+    // Cause not found. Reported as skipped, not passed, until it is fixed.
+    test.fixme(browserName === 'webkit', 'WebKit: toggle tooltip often fails to open after the toggle was clicked; cause not found')
+    // Collapsed: "Expand sidebar". The same hover approach as the nav items (pointer away, then hover).
+    const expand = await openCollapsedSidebar(page)
+    await expand.hover()
     await expect(page.getByRole('tooltip', { name: 'Expand sidebar' })).toBeVisible()
+    // Expanded: "Collapse sidebar" is icon-only too, so it also needs a tooltip (FR-031).
+    await expand.click()
+    const collapse = page.getByRole('button', { name: 'Collapse sidebar' })
+    await expect(collapse).toBeVisible()
+    await movePointerAway(page)
+    await collapse.hover()
+    await expect(page.getByRole('tooltip', { name: 'Collapse sidebar' })).toBeVisible()
   })
 })
 

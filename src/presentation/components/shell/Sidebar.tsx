@@ -79,7 +79,8 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
             )}
           </button>
         </TooltipTrigger>
-        <TooltipContent side="right" className={cn('[@media(hover:none)]:hidden', !collapsed && 'hidden')}>
+        {/* Icon-only in both states, so the tooltip shows in both (FR-031). */}
+        <TooltipContent side="right" className="[@media(hover:none)]:hidden">
           {toggleLabel}
         </TooltipContent>
       </Tooltip>

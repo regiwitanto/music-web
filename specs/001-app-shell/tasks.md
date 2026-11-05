@@ -214,7 +214,7 @@ This is a single Next.js App Router project. Sources live in `src/` and cross-cu
   - hidden below 768 px with `display:none` (`hidden md:flex`), and `position: fixed` at the left with width `var(--sidebar-w)`;
   - forced icon-only at 768–1023 px; at ≥ 1024 px it is expanded (240 px) or collapsed (72 px) from the `collapsed` and `onToggle` props;
   - the header shows `APP_DISPLAY_NAME` truncated with an ellipsis (full name kept in the accessible name); when collapsed it shows a neutral glyph with the name in a tooltip and in visually hidden text;
-  - the collapse toggle `button` (≥ 1024 px only) carries `aria-expanded`, the names "Collapse sidebar" / "Expand sidebar", and a tooltip when collapsed;
+  - the collapse toggle `button` (≥ 1024 px only) carries `aria-expanded`, the names "Collapse sidebar" / "Expand sidebar", and a tooltip in both states (amended 2026-11-06, owner-approved: was "when collapsed", which narrowed FR-031);
   - only the name and the 4 `NavItem`s: no playlist area (FR-007).
 
   Makes T043 pass.

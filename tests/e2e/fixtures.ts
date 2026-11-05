@@ -159,6 +159,17 @@ export async function movePointerAway(page: Page): Promise<void> {
   await page.mouse.move((size?.width ?? 800) - 2, 2, { steps: 4 })
 }
 
+/** Loads `/` on a desktop project, collapses the sidebar and returns the "Expand sidebar" toggle. */
+export async function openCollapsedSidebar(page: Page): Promise<import('@playwright/test').Locator> {
+  await page.goto('/')
+  await waitForHydration(page)
+  await page.getByRole('button', { name: 'Collapse sidebar' }).click()
+  const expand = page.getByRole('button', { name: 'Expand sidebar' })
+  await expect(expand).toBeVisible()
+  await movePointerAway(page)
+  return expand
+}
+
 /** Asserts the page has no horizontal scroll. */
 export async function noHorizontalScroll(page: Page): Promise<void> {
   const { scrollWidth, innerWidth } = await page.evaluate(() => ({

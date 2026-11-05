@@ -32,7 +32,7 @@ The externally observable contract of the shell. E2E and component tests assert 
 | Accessible name | Equals the label, including when it is icon-only [FR-031] |
 | Tooltip | Icon-only items show a tooltip with the label on hover or focus, but only when `(hover: hover)` [FR-031] |
 | Sidebar header | Shows the `APP_DISPLAY_NAME` text, truncated with an ellipsis. Its full text stays in the accessible name. When collapsed, the visible header is a neutral glyph and the name is in the tooltip and in visually hidden text [edge case "Long public name"] |
-| Collapse toggle (≥ 1024 px only) | `button` with `aria-expanded` and accessible name "Collapse sidebar" / "Expand sidebar", plus a tooltip when collapsed |
+| Collapse toggle (≥ 1024 px only) | `button` with `aria-expanded` and accessible name "Collapse sidebar" / "Expand sidebar", plus a tooltip with that name in **both** states, because it is icon-only in both [FR-031]. *Amended 2026-11-06 (owner, `/code-review` finding 1): previously "a tooltip when collapsed", which narrowed FR-031.* |
 | Re-select | Root and current: scrolls to top, focus unchanged, and nothing happens when already at the top. Nested: navigates to the root [FR-010] |
 | Bottom nav | Each item shows its icon and visible label, with a hit area ≥ 44×44 px [FR-030] |
 | Sidebar items | Hit area ≥ 40 px tall (design-system §4) and ≥ 24×24 px [FR-030] |
