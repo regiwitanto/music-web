@@ -26,6 +26,11 @@
 - **D-001-2.** Q: Which segments does `/settings/<section>` accept?
   A: **During MVP, any single segment** is reserved and shows the placeholder. **In future, the pattern MUST be restricted to Settings sections that have actually been implemented**, and every other segment shows Not Found. The restriction is owned by the Settings features: `010-settings-data`, plus `009-local-files-storage` for the Storage section (see `specs/README.md`, open item O7).
 
+### Session 2026-11-05 (owner decision during planning)
+
+- **D-001-3.** Q: The framework already announces each new page title through its own built-in live region (assertive), and that region cannot be turned off. Adding a second, polite region would announce every title twice. How should page changes be announced?
+  A: **Use the framework's built-in announcement, and require that the page title is announced exactly once per page change.** FR-028, Story 3 scenario 3 and SC-009 were amended from "a polite announcement" to "announced once". Focus still moves to the page's main heading.
+
 ## User Scenarios & Testing *(mandatory)*
 
 ### User Story 1 - Reach any destination from anywhere (Priority: P1)
@@ -95,7 +100,7 @@ A listener using only a keyboard, or a screen reader, can skip repeated content,
    - every interactive element is reachable;
    - the idle player dock receives no focus;
    - a visible focus indicator with at least 3:1 contrast is always shown.
-3. **Given** the user activates a navigation item, **When** the new page renders, **Then** focus moves to that page's main heading and a polite announcement reads the page title.
+3. **Given** the user activates a navigation item, **When** the new page renders, **Then** focus moves to that page's main heading and the page title is announced to assistive technology exactly once (D-001-3).
 4. **Given** a screen reader, **When** the user lists the page's landmarks, **Then** they find:
    - one navigation landmark (the sidebar or the bottom bar, whichever is shown);
    - one main content landmark;
@@ -229,7 +234,7 @@ Before their features are built, each destination shows a clear placeholder: a h
 - **FR-025**: The shell MUST meet WCAG 2.2 AA.
 - **FR-026**: "Skip to content" MUST be the first focusable element on every page and MUST move focus to the main content. The player dock in this feature is non-interactive, so it MUST NOT receive focus, and no "Skip to player" link is provided. "Skip to player" is deferred to the Global Player UI (feature 008), which introduces interactive player controls.
 - **FR-027**: The shell MUST expose landmarks for navigation, main content and the player region labelled "Player".
-- **FR-028**: On every page change, focus MUST move to the page's main heading, and a polite live announcement MUST read the page title.
+- **FR-028**: On every page change, focus MUST move to the page's main heading, and the new page title MUST be announced to assistive technology exactly once (D-001-3).
 - **FR-029**: A visible focus indicator (≥ 3:1 contrast) MUST be shown on every focusable element when it receives keyboard focus.
 - **FR-030**: Touch-primary navigation targets MUST be at least 44×44 px. All other pointer targets MUST be at least 24×24 px.
 - **FR-031**: Icon-only controls MUST have an accessible name and, on pointer devices, a tooltip.
@@ -270,7 +275,7 @@ Before their features are built, each destination shows a clear placeholder: a h
 - **SC-006** (UX-AC-25): A scan of the rendered pages, titles, metadata and built output finds 0 occurrences of "Metrolist", "YouTube", "Spotify" or "Apple Music".
 - **SC-007**: Across 10 consecutive navigations covering all four destinations and two reserved nested addresses, the navigation and the player dock are created exactly once. They are never re-created.
 - **SC-008**: Browser Back, Forward and Refresh on any destination or reserved nested address always show the matching page and active item (100% of tested addresses). Every reserved pattern in FR-012 shows "Nothing here yet" under the correct destination. Each unknown-address example in Story 2, scenario 8 shows Not Found (100% of cases).
-- **SC-009**: After every navigation, focus is on the new page's main heading, and its title is announced to screen-reader users (verified in a manual pass with at least one desktop and one mobile screen reader).
+- **SC-009**: After every navigation, focus is on the new page's main heading, and its title is announced exactly once to screen-reader users (verified in a manual pass with at least one desktop and one mobile screen reader).
 - **SC-010**: A simulated page failure leaves navigation usable, and Retry recovers the page without a full reload.
 
 ## Assumptions

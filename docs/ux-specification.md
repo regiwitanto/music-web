@@ -232,7 +232,7 @@ Copy tone: plain, short, no blame, and always offers a next step.
 - The minimum pointer target is 24×24 px. Touch-primary controls (mobile player, nav) are **44×44 px**.
 - Use landmarks: `nav` for the sidebar and bottom nav, `main` for content, `region` with the label "Player" for the player bar, `complementary` for the queue.
 - "Skip to content" is the first focusable element. "Skip to player" follows it once the player has interactive controls (feature 008). While the dock is an idle, non-interactive placeholder, there is no "Skip to player" link.
-- On route change, focus moves to the page `h1` (`tabIndex=-1`), and a polite live region announces the page title.
+- On route change, focus moves to the page `h1` (`tabIndex=-1`), and the page title is announced exactly once. The framework's built-in route announcer does this, so no second live region is added (decision D-001-3, 2026-11-05).
 - **Dialogs and the sheet** use Radix Dialog: focus is trapped, Esc closes, focus returns to the trigger, and the background is inert.
 - **Sliders** (seek, volume) use Radix Slider:
   - `aria-valuetext` reads "1 minute 12 seconds of 3 minutes 15 seconds" and "Volume 60%".

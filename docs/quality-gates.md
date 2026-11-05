@@ -56,7 +56,7 @@ Only features with a spec are listed. Statuses: **Passed** (with an evidence lin
 |---|---|---|
 | G1 Specification review | **Passed** 2026-11-05 | Owner approval, 2026-11-05 (recorded in the spec Status line and Clarifications D-001-1/2). The checklist passed: [checklists/requirements.md](../specs/001-app-shell/checklists/requirements.md) |
 | G2 AC completeness | **Passed** 2026-11-05 | Owner approval of the spec, 2026-11-05. FR→scenario/SC mapping as in the spec; UX-AC list in the spec header |
-| G3 Plan approval | Not run | No plan yet |
+| G3 Plan approval | **Passed** 2026-11-05 | Owner approval, 2026-11-05 (recorded in the plan Status line). Plan: [plan.md](../specs/001-app-shell/plan.md), [research.md](../specs/001-app-shell/research.md), [data-model.md](../specs/001-app-shell/data-model.md), [contracts/](../specs/001-app-shell/contracts/), [quickstart.md](../specs/001-app-shell/quickstart.md). Constitution Check: PASS, no violations. Revised 2026-11-05 per owner review (research R15: Appearance selection shown from first paint) |
 | G4 Task breakdown | Not run | — |
 | G5 TypeScript | Not run | Script not yet created |
 | G6 Lint | Not run | — |

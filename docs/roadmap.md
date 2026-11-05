@@ -99,8 +99,48 @@ The roadmap has no calendar dates. The pace is personal, so each phase ends at i
 | **Dependencies** | Phases 03 and 05. A public display name is optional: the neutral placeholder is acceptable for the beta (D5), but "Metrolist Web Reimagined" must never be used. |
 | **Entry gate** | All P0 features are done. Zero open P0 bugs. Every P0 UX-AC passes. The owner has used it for 14 days without data loss. |
 | **Acceptance criteria** | Every beta-reported crash or data-loss bug is either fixed or has a documented workaround. The manual beta checklist ([testing/test-plan.md §8](testing/test-plan.md#8-manual-beta-checklist)) is run on each tester's browser and device combination. |
-| **Definition of Done** | Two consecutive weeks with no new P0 or P1 bugs. A decision is recorded on what follows: P2 (compliant provider, sync and backend, Android). |
+| **Definition of Done** | Two consecutive weeks with no new P0 or P1 bugs. A decision is recorded on what follows: P2 (compliant provider, sync and backend, Android) and, per D6, the outcome of the YouTube Music feasibility study ([Long-term direction](#long-term-direction-d6)). |
 | **Risks** | Testers expect streaming of a mainstream catalog. *Mitigation:* explain the scope clearly at onboarding. Device diversity. *Mitigation:* the diagnostics export. |
+
+---
+
+## Long-term direction (D6)
+
+*Recorded 2026-11-05 as owner decision D6 ([product-requirements.md §9](product-requirements.md#9-decisions-approved-by-the-owner-2026-11-05)).*
+
+**Goal.** In the long term, the product becomes a **hybrid offline music player and YouTube Music client**, comparable in scope to Metrolist. The offline player is what Phases 01–06 build. The YouTube Music client part is future work.
+
+**What does not change now**
+- The local-first MVP, phases 01–06, the feature order in [specs/README.md](../specs/README.md) and the current scope of every feature stay as they are.
+- No YouTube or YouTube Music code, provider, dependency, proxy or experiment is added.
+- The following remain binding until they are explicitly amended:
+  - constitution principles XII (authorized sources) and XIII (no backend);
+  - product-requirements §6 (music-source policy);
+  - ADR-007;
+  - the `AGENTS.md` "Never" list;
+  - the decision in metrolist-audit §12.
+- The public-facing UI still must not use "Metrolist", "YouTube" or other third-party names (D5, XII).
+
+**Required first step: the YouTube Music feasibility study (research only)**
+- **Form.** A written report in `docs/` that the owner reviews. It produces **no code**, prototypes against private endpoints, or network calls to YouTube services.
+- **Timing.** It can start early, in parallel with the MVP phases, because it is documentation only. Implementation cannot start until the study is complete and the decisions below are recorded.
+- **Questions it must answer:**
+  1. **Platform policy.** What do the YouTube Terms of Service and the YouTube API Services terms and policies permit for a third-party web or PWA music client? For example: audio-only or background playback, separating audio from video, caching or offline storage, ads, and use of a logged-in user's account.
+  2. **Official access paths.** Does any official, documented API or embed exist that gives access to the YouTube Music catalog, library or playback? What are its capabilities, quotas, approval or audit process and limits? Which of the product's wanted features would it fail to support?
+  3. **Technical feasibility in a browser.** What does each path need in terms of CORS, authentication (OAuth scopes versus cookies), DRM or signed streams, region and age restrictions, and reliability? Would it need a server component (constitution XIII, ADR-001)?
+  4. **Risk.** What are the legal, account-suspension, breakage, maintenance and beta-tester exposure risks of each path? The study builds on metrolist-audit §12, which found the unofficial InnerTube approach high-risk.
+  5. **Compliance fit.** Can any path pass the provider compliance checklist ([provider-contract.md §8](provider-contract.md#8-compliance-checklist-for-new-providers)) as a `MusicProvider`?
+  6. **Recommendation.** Go, no-go, or a narrower compliant alternative, with the doc and constitution changes each option would need.
+- **Gate after the study.** The owner records a decision.
+  - **Any "go"** requires, before any spec is written:
+    - a constitution amendment via `/speckit-constitution` (a principle redefinition is a MAJOR version);
+    - a new ADR superseding or amending ADR-007 (and ADR-001 if a backend is needed);
+    - updates to product-requirements §6 and the `AGENTS.md` prohibitions.
+
+    Only then can a Spec Kit feature be specified.
+  - **A "no-go"** keeps the current policy, and D6 is revised.
+
+**Note.** Integrations that use stream extraction, signature deciphering, token minting, client impersonation, ad removal, or DRM or region bypass are prohibited by the current constitution (XII). The study must judge every candidate path against those rules, not assume an exception.
 
 ---
 
