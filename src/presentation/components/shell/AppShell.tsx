@@ -31,12 +31,41 @@ export function AppShell({ children }: { children: ReactNode }) {
   // move focus to the current (or first) item of the form that is now visible.
   const isDesktop = useMediaQuery('(min-width: 768px)')
   const previousDesktop = useRef(isDesktop)
+
+  // Some engines (seen in Chromium) drop focus to <body> as soon as CSS hides the
+  // focused nav item, before the breakpoint change reaches the effect below. Record
+  // that case: a focusout with no new target from an element that has no layout box
+  // any more. Any later focusin clears it, so a deliberate click elsewhere never
+  // triggers a handoff.
+  const focusLostToHiddenNav = useRef<string | null>(null)
+  useEffect(() => {
+    const onFocusOut = (event: FocusEvent) => {
+      const target = event.target
+      if (!(target instanceof HTMLElement) || event.relatedTarget !== null) return
+      const nav = target.closest<HTMLElement>('[data-nav]')
+      if (nav && target.getClientRects().length === 0) focusLostToHiddenNav.current = nav.dataset.nav ?? null
+    }
+    const onFocusIn = () => {
+      focusLostToHiddenNav.current = null
+    }
+    document.addEventListener('focusout', onFocusOut, true)
+    document.addEventListener('focusin', onFocusIn, true)
+    return () => {
+      document.removeEventListener('focusout', onFocusOut, true)
+      document.removeEventListener('focusin', onFocusIn, true)
+    }
+  }, [])
+
   useEffect(() => {
     if (previousDesktop.current === isDesktop) return
     previousDesktop.current = isDesktop
-    const hidden = document.querySelector<HTMLElement>(`[data-nav="${isDesktop ? 'bottom' : 'sidebar'}"]`)
+    const hiddenKind = isDesktop ? 'bottom' : 'sidebar'
+    const hidden = document.querySelector<HTMLElement>(`[data-nav="${hiddenKind}"]`)
     const visible = document.querySelector<HTMLElement>(`[data-nav="${isDesktop ? 'sidebar' : 'bottom'}"]`)
-    if (!hidden || !visible || !hidden.contains(document.activeElement)) return
+    const lostToHiding = focusLostToHiddenNav.current === hiddenKind
+      && (document.activeElement === null || document.activeElement === document.body)
+    focusLostToHiddenNav.current = null
+    if (!hidden || !visible || !(hidden.contains(document.activeElement) || lostToHiding)) return
     const target = visible.querySelector<HTMLElement>('a[aria-current="page"]') ?? visible.querySelector<HTMLElement>('a')
     target?.focus()
   }, [isDesktop])

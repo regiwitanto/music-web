@@ -231,6 +231,28 @@ test.describe('crossing a breakpoint (V23)', () => {
     await page.setViewportSize({ width: 1440, height: 900 })
     await expect(page.getByTestId('sidebar').locator('a[aria-current="page"]')).toBeFocused()
   })
+
+  test('the hand-off also works from the sidebar to the bottom nav', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/library/liked')
+    await waitForHydration(page)
+    await page.getByTestId('sidebar').getByRole('link', { name: 'Home' }).focus()
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(page.getByTestId('bottom-nav').locator('a[aria-current="page"]')).toBeFocused()
+  })
+
+  test('focus that already left the nav is not pulled back by a breakpoint change', async ({ page }) => {
+    await page.setViewportSize({ width: 390, height: 844 })
+    await page.goto('/library/liked')
+    await waitForHydration(page)
+    const home = page.getByTestId('bottom-nav').getByRole('link', { name: 'Home' })
+    await home.focus()
+    // The user moves focus away while the link is still visible, leaving focus on <body>.
+    await home.evaluate((el) => (el as HTMLElement).blur())
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await expect(page.getByTestId('sidebar').locator('a[aria-current="page"]')).not.toBeFocused()
+    expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true)
+  })
 })
 
 test.describe('reflow (V24)', () => {

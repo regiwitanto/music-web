@@ -75,7 +75,7 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
 - **Rationale.**
   - `display:none` removes an element from the accessibility tree, so exactly one navigation landmark is exposed at any width (FR-006, Story 3 scenario 4).
   - There is no `matchMedia` on first render, so there is no hydration mismatch or layout jump.
-  - Crossing a breakpoint keeps the URL, the page and the focused element: focus is lost only if it was inside the navigation form that becomes hidden. In that case focus moves to the active item of the visible form. A small `useMediaQuery`-driven effect handles this, per the edge case "Crossing a breakpoint".
+  - Crossing a breakpoint keeps the URL, the page and the focused element: focus is lost only if it was inside the navigation form that becomes hidden. In that case focus moves to the active item of the visible form. A small `useMediaQuery`-driven effect handles this, per the edge case "Crossing a breakpoint". *Amended 2026-11-06:* some engines (seen in Chromium) move focus to `<body>` as soon as CSS hides the focused item, before the media-query change reaches the effect. The shell therefore also records a `focusout` with no new target from an element that no longer has a layout box, and the effect treats that as "focus was inside the hidden form". Any later `focusin` clears the record.
 - **Alternatives considered.**
   - *Rendering one form via `useMediaQuery`.* Rejected: the server cannot know the width, which causes a flash and a hydration mismatch.
   - *Container queries.* Rejected: the breakpoints are viewport-based in ux-spec §2.
