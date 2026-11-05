@@ -92,15 +92,15 @@ The tokens are:
 
 | # | Guarantee |
 |---|---|
-| T1 | After a radio `change` event, before the next animation frame, `getComputedStyle(document.body).backgroundColor` equals the new theme's `--bg`. The nav active item's colour equals the new `--accent` [FR-019] |
+| T1 | After a radio `change` event, before the next animation frame, `getComputedStyle(document.body).backgroundColor` equals the new theme's `--bg`. The nav active item's colour equals the new `--accent`. Measured by clicking the radio and reading the styles inside a single `page.evaluate`, with no `await` between them [FR-019] |
 | T2 | After a reload, `data-theme` and `data-accent` equal the last selection [FR-020] |
-| T3 | With JS chunks held back, on 10 cold loads per theme, the first observable body background equals the persisted theme's `--bg` [FR-021, SC-004] |
+| T3 | With JS chunks held until explicitly released (no timeout), and after verifying hydration has not happened (chunk requests held, none fulfilled), on 10 cold loads per theme the first observable body background equals the persisted theme's `--bg` [FR-021, SC-004] |
 | T4 | With `theme=system`, `emulateMedia({colorScheme})` switches the background live [FR-022] |
 | T5 | With `theme=oled`, the body background is `rgb(0, 0, 0)` [Story 4 scenario 5] |
 | T6 | If `localStorage` throws, switching still works, and a reload shows System + Violet with no console error from app code [edge case] |
 | T7 | A corrupt stored value gives System + Violet. A partially valid value keeps its valid field [edge case] |
 | T8 | The token-contrast unit test passes for every theme × accent combination [FR-023, SC-005] |
-| T9 | Cold load of `/settings` with JS chunks held back: exactly one theme radio and one accent radio have `checked === true`, they match storage, and their selected indicator is drawn. Both stay checked after hydration, with no hydration error or warning from app code [R15] |
+| T9 | Cold load of `/settings` with JS chunks held until explicitly released, after verifying hydration has not happened: exactly one theme radio and one accent radio have `checked === true`, they match storage, and their selected indicator is drawn. Both stay checked after hydration, with no hydration error or warning from app code [R15] |
 | T10 | Client navigation to `/settings`: the correct radios are checked on first render [R15] |
 | T11 | `theme=system` with the OS scheme toggled: the System radio stays checked while the palette changes [R15, FR-022] |
 | T12 | `buildAppearanceSelectionScript()` in a `vm` sandbox: for all 32 combinations exactly one radio per group ends up checked; missing attributes give System + Violet; it never throws [R15] |

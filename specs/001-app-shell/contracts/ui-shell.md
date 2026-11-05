@@ -93,8 +93,25 @@ There is no horizontal page scroll from 320 px upward, including at 200% zoom [F
 
 | Hook | Shape | Use |
 |---|---|---|
-| `window.__TEST_FAULTS__` | `Record<pathname, { mode: 'throw-once' } \| { mode: 'delay'; ms: number }>`, set by Playwright `addInitScript` | Story 6 scenarios 2–4, SC-010 |
-| `window.__SHELL_MOUNTS__` | `{ nav: number; dock: number }`, incremented on mount | SC-007: values stay at `{nav: 2, dock: 1}` (Sidebar + BottomNav, one dock) across navigations |
+| `window.__TEST_FAULTS__` | `Record<pathname \| '__shell__', { mode: 'throw' } \| { mode: 'hold' }>`. Keys are pathnames, plus the reserved key `'__shell__'`, which `AppShell` reads outside `main` to force a whole-app failure (approved by the owner at G4, 2026-11-05). **`throw`** throws on every render while the entry exists; the hook never removes it, and the test clears it before Retry or Reload. **`hold`** makes `PlaceholderView` show `loading` until the test calls `window.__TEST_RELEASE__(key)`, and then `empty`, through `AsyncView` state updates rather than Suspense or timers. It applies only when the page mounts during a client-side navigation and is ignored on a direct load. Playwright installs the faults through `addInitScript`, guarded by a `sessionStorage` marker so they are installed **once per tab** and a reload does not reinstall them (amended 2026-11-05, analysis findings X1–X3 and C1) | Story 6 scenarios 2–5, SC-010, quickstart V18–V20 |
+| `window.__TEST_RELEASE__` | `(key: string) => void`, defined by the hold hook module. It deletes the `hold` entry for `key` and re-renders the subscribed `PlaceholderView` synchronously | Story 6 scenarios 2–3, FR-035, quickstart V18 |
+| `window.__SHELL_MOUNTS__` | `{ shell: number; sidebar: number; bottomNav: number; dock: number }`, one counter per shared shell component, incremented when that component instance mounts | SC-007: deep-equals `{ shell: 1, sidebar: 1, bottomNav: 1, dock: 1 }` after load and stays so across navigations (§7.1) |
 | `data-testid` | `app-shell`, `sidebar`, `bottom-nav`, `player-dock`, `skeleton`, `error-state`, `empty-state`, `nothing-here-yet`, `not-found` | Stable selectors. Role and name selectors are preferred, and these are used only where roles are ambiguous |
 
-A flag-off production build must contain neither global (verified by `scan:branding`; research R10).
+### 7.1 Shell mount counters
+
+- **One counter per shared shell component.** `AppShell`, `Sidebar`, `BottomNav` and `PlayerDock` each record their own mount. The expected value is `{ shell: 1, sidebar: 1, bottomNav: 1, dock: 1 }` at **every** width.
+- **Why both navigation forms count as mounted.** The layout server-renders both `Sidebar` and `BottomNav`, and CSS hides the one that doesn't apply (`display:none`, research R3). This keeps one exposed navigation landmark without a hydration mismatch. Both are therefore mounted once, at every width. (An earlier draft combined them as `nav: 2`; the per-component shape makes each "exactly once" assertion direct.)
+- **Why the dock counts 1 on mobile.** `PlayerDock` is a single instance. Below 768 px it is hidden with CSS while idle, but it is still mounted.
+- **Invariant.** No client navigation, Back or Forward, breakpoint crossing, or page error and Retry may re-create these components, so no counter ever exceeds 1 within a document [FR-011, SC-007]. A Refresh or a new tab is a new document, and the counters restart and must read 1 after load.
+- **Production mode only.** The counts are asserted against `next build && next start`. React's development Strict Mode deliberately mounts components twice, so dev-server counts are not meaningful.
+
+### 7.2 Exclusion from production builds
+
+The hooks in this section exist only in a build made with `NEXT_PUBLIC_TEST_HOOKS=1`, which is used only for E2E testing. A normal production build must contain none of them.
+
+- **Gate.** Each hook checks the literal `process.env.NEXT_PUBLIC_TEST_HOOKS === '1'` inside its own function body. Next inlines `NEXT_PUBLIC_*` values at build time, so with the flag unset the condition is a constant `false` and the minifier removes the hook code, including the global names.
+- **Hook order.** The flag check never wraps a React hook call. Every hook (`usePathname`, `useSyncExternalStore`, `useState`) is called unconditionally at the top, in the same order, in both builds. The flag only selects the functions passed to those hooks and the value returned.
+- **Containment (lint).** Only `src/presentation/testing/**` may read `NEXT_PUBLIC_TEST_HOOKS`, and nothing outside `src/test/**` may import `@/test/*` (research R12; tasks T008–T009).
+- **Configuration.** The flag is never set in `.env*` files, `next.config.ts`, `package.json` scripts or any deployment environment. CI sets it only on the single E2E build step.
+- **Verification.** `scan:branding` runs against the flag-off build and fails if `.next/static/**` or `.next/server/**` contains `__TEST_FAULTS__`, `__TEST_RELEASE__`, `__SHELL_MOUNTS__` or `__shell__` (research R10). Component tests confirm the hooks are inert when the flag is unset.

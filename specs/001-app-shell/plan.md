@@ -4,12 +4,26 @@
 
 **Input**: Feature specification from `specs/001-app-shell/spec.md` (approved 2026-11-05, G1 and G2 passed)
 
-**Status**: **Approved by the owner, 2026-11-05 (Gate G3 passed).** No application code has been written. Next stage: `/speckit-tasks` (not yet started).
+**Status**: **Approved by the owner, 2026-11-05 (Gate G3 passed).** No application code has been written. Tasks approved 2026-11-05 in [tasks.md](tasks.md) (108 tasks, Gate G4 passed). `/speckit-analyze` has run four times. The fourth run (2026-11-05) reported 0 CRITICAL, 0 HIGH and one MEDIUM (M1), and M1 was remediated the same day. Next stage: owner approval to start implementation.
 
 **Owner review, 2026-11-05 (pre-G3).**
 - **Approved:** the overall architecture, the seven additional dependencies, the routing strategy and the neutral favicon.
 - **Refinement requested:** the Appearance controls must show the persisted selection from first paint. This is addressed in research R15, contracts/theme.md §5 and T9–T12, and quickstart V25.
 - **G3 passed 2026-11-05:** the owner approved the revised plan.
+- **Post-analysis amendment, 2026-11-05 (owner-approved, documentation only).** This resolves every `/speckit-analyze` finding without changing scope or product behaviour:
+  - K1: third-party license review recorded in architecture §2, with notices in `THIRD_PARTY_NOTICES.md`;
+  - X1: test faults throw until the test clears them;
+  - X2: faults are installed once per tab, so a reload recovers;
+  - X3: simulated delays use `AsyncView` state updates instead of Suspense, keeping the 150 ms rule (R9, R10);
+  - U1: a `createSettingsStore` factory;
+  - the remaining coverage and wording items in tasks.md and quickstart.md.
+- **Second post-analysis amendment, 2026-11-05 (owner-approved, documentation only).** This resolves the re-run findings without changing scope or product behaviour:
+  - C1: the simulated load is held and released by the test (`hold` and `__TEST_RELEASE__`), and the 149/150 ms reveal boundary is checked through the Web Animations API, so no test depends on wall-clock time (constitution X; R10);
+  - U1: React hooks in the test hooks are always called unconditionally and in a fixed order;
+  - U2: T078 imports `configureContainer` from the fresh module instance;
+  - I1: R14 is synchronised with the test tasks;
+  - I2: the G4 evidence records both amendments.
+- **Third post-analysis amendment, 2026-11-05 (owner-approved, documentation only).** H1: the no-flash and first-paint tests hold JavaScript chunks until they explicitly release them, with no timeout. They verify that hydration has not happened before the pre-hydration checks, and fixture teardown guarantees release on failure (R14; theme.md T3 and T9).
 
 ## Summary
 
@@ -98,9 +112,9 @@ No `NEEDS CLARIFICATION` remains. The one open question, the route announcement 
 | VII | MusicProvider abstraction | N/A | N/A | No catalog access in 001. |
 | VIII | Strict TS and modular architecture | ✅ | ✅ | Strict flags are added (R13). The ESLint layer rules use built-in rules and have a fixture proof (R12). The domain is pure. The `AppearanceRepository` port has two implementations now (localStorage and a test fake) and a third in 002. New deps are listed for §2 justification. |
 | IX | Accessibility and responsive | ✅ | ✅ | Landmarks, skip link, focus-to-`h1`, focus ring, target sizes, reduced motion, 320 px / 200% zoom (contracts/ui-shell.md). Axe runs in 3 themes. The manual SR pass is planned. |
-| X | Automated tests of critical behaviour | ✅ | ✅ | Navigation continuity, theming (including no-flash), token contrast and a11y scans are automated (R14). Tests are deterministic: no network; JS chunk delay is controlled by the test. |
+| X | Automated tests of critical behaviour | ✅ | ✅ | Navigation continuity, theming (including no-flash), token contrast and a11y scans are automated (R14). Tests are deterministic: no network; JS chunk delay is controlled by the test. The skeleton's 150 ms threshold is checked with a test-controlled hold and release plus Web Animations clock control, never with wall-clock races (C1). |
 | XI | Privacy by default | ✅ | ✅ | No analytics or third-party scripts. Fonts are self-hosted through `next/font`. CI does not deploy. |
-| XII | Licensing and branding | ✅ | ✅ | `APP_DISPLAY_NAME` is the only public name. The branding scan covers DOM and build output. Scaffold Next/Vercel assets and the favicon are removed (R13). No reference-repo material is used. |
+| XII | Licensing and branding | ✅ | ✅ | `APP_DISPLAY_NAME` is the only public name. The branding scan covers DOM and build output. Scaffold Next/Vercel assets and the favicon are removed (R13). No reference-repo material is used. Third-party code and assets copied into the repository or the build are license-reviewed in architecture §2 and attributed in `THIRD_PARTY_NOTICES.md` (K1). |
 | XIII | No backend | ✅ | ✅ | There are no route handlers, actions, middleware or cookie reads. Dynamic `[id]` pages do no data access. Test hooks are client-only and flag-gated (R10). |
 | XIV | No silent scope expansion | ✅ | ✅ | Out of scope: SHELL-03, SHELL-04, "Skip to player", other Settings sections and playlist shortcuts. The one deviation from the spec text (FR-028) was put to the owner and recorded as D-001-3. |
 | XV | Docs and code consistency | ✅ | ✅ | The FR-028 change updates spec.md, ux-specification §8, quality-gates and specs/README in this change. §2 dependency lines are applied with the install task (see below). |
@@ -155,10 +169,10 @@ src/
 │   │   ├── shell/                         # AppShell, Sidebar, BottomNav, NavItem, nav-icons, PlayerDock, SkipLink, RouteFocus, ThemeSync
 │   │   ├── InlineScript.tsx               # bundled-guide helper for pre-hydration scripts
 │   │   ├── settings/                      # AppearanceSettings (+ selection script, R15)
-│   │   └── states/                        # EmptyState, ErrorState, NothingHereYet, DelayedSkeleton, AsyncView
-│   ├── hooks/                             # useMediaQuery, usePrefersReducedMotion
+│   │   └── states/                        # EmptyState, ErrorState, NothingHereYet, DelayedSkeleton, AsyncView, PlaceholderView
+│   ├── hooks/                             # useMediaQuery (reduced-motion reads use matchMedia at event time)
 │   ├── lib/cn.ts
-│   └── testing/TestFault.tsx              # flag-gated
+│   └── testing/                           # flag-gated: TestFault, useTestHold, shell-mounts
 ├── application/
 │   ├── container.ts
 │   ├── ports.ts                           # AppearanceRepository, DocumentThemeTarget
@@ -183,7 +197,7 @@ tests/
 └── e2e/                                   # nav, routes, a11y, theme, dock, states, branding (.spec.ts)
 
 scripts/scan-branding.mjs
-vitest.config.mts · playwright.config.ts · components.json · .github/workflows/ci.yml
+vitest.config.mts · playwright.config.ts · components.json · .github/workflows/ci.yml · THIRD_PARTY_NOTICES.md
 ```
 
 **Structure decision.** This is the single-project layout from architecture §4, with two additions:

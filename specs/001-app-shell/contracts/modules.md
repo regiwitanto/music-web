@@ -63,7 +63,9 @@ export interface SettingsState {
   reconcile(): void;                                   // after mount: load repository, apply only if it differs
   setAppearance(next: Partial<AppearancePreference>): void;  // apply DOM → save → set (research R5)
 }
-export const useSettingsStore: UseBoundStore<StoreApi<SettingsState>>;
+export function createSettingsStore(deps: { appearance: AppearanceRepository; themeTarget: DocumentThemeTarget }):
+  UseBoundStore<StoreApi<SettingsState>>;              // factory; tests build a fresh store per test (U1)
+export const useSettingsStore: UseBoundStore<StoreApi<SettingsState>>;   // = createSettingsStore(container)
 
 // shell.ts: runtime facade for presentation
 export { DESTINATIONS, classifyPath, activeDestination, THEMES, ACCENTS,
@@ -92,8 +94,11 @@ export class HtmlDocumentThemeTarget implements DocumentThemeTarget {}   // read
 | `components/settings/AppearanceSettings.tsx` | client | Radiogroups per [theme.md §5](theme.md#5-appearance-controls-settings--appearance); emits the selection script (R15) |
 | `components/InlineScript.tsx` | server-compatible | The bundled guide's helper: `text/javascript` on the server, `text/plain` on the client, `suppressHydrationWarning` |
 | `components/states/{EmptyState,ErrorState,NothingHereYet,DelayedSkeleton,AsyncView}.tsx` | server-compatible except ErrorState (client) | Reused by later features |
+| `components/states/PlaceholderView.tsx` | client | A destination placeholder body: `AsyncView` over local state, `empty` by default, with `loading` → `empty` only under a test hold that the test releases (research R9, R10) |
 | `components/ui/{button,tooltip,skeleton}.tsx` | shadcn | Generated, then restyled to tokens |
 | `lib/cn.ts` | util | `clsx` + `tailwind-merge` |
-| `testing/TestFault.tsx` | client | Flag-gated (research R10) |
+| `testing/TestFault.tsx` | client | Flag-gated. `throw` mode only, persistent until cleared (research R10) |
+| `testing/useTestHold.ts` | client | Flag-gated. Returns `true` while a `hold` entry exists for the pathname on a client-side mount; defines `window.__TEST_RELEASE__` (research R10) |
+| `testing/shell-mounts.ts` | client | Flag-gated mount counters ([ui-shell.md §7.1](ui-shell.md#71-shell-mount-counters)) |
 
 **Stability promise.** Features 002, 007 and 008 may add implementations, such as a Dexie `AppearanceRepository` or player content inside `PlayerDock`. They must not change these signatures without a plan amendment.

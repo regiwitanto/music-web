@@ -56,6 +56,26 @@ Everything happens in the browser. There is no backend. The browser layer has th
 - a colour-extraction library (a small canvas sampler is enough)
 - an i18n framework (strings are English; they are kept in one module so translation is possible later)
 
+**Third-party license review (constitution XII)**
+
+Recorded 2026-11-05 as part of the 001 plan amendment (analysis finding K1). It covers every piece of third-party code or asset that is **copied into the repository** or **emitted in the build output**. Dependencies used only at development or test time are listed separately because they are not distributed.
+
+| Material | How it enters the product | License | Obligation | How it is met |
+|---|---|---|---|---|
+| shadcn/ui component source (`button`, `tooltip`, `skeleton`) and the `cn()` helper | Copied by the shadcn CLI into `src/presentation/components/ui/` and `src/presentation/lib/cn.ts`, then restyled | MIT | Keep the copyright and permission notice with the copied code | The full MIT text with the upstream copyright line in `THIRD_PARTY_NOTICES.md`, and a one-line header comment in each copied file that points to it |
+| The `InlineScript` helper from the bundled Next.js guide `preventing-flash-before-hydration.md` | Adapted into `src/presentation/components/InlineScript.tsx` | MIT (Next.js repository) | Same as above | Same as above |
+| Lucide icons (`lucide-react`) | Icon path data bundled into client JavaScript | ISC, with portions under MIT (derived from Feather) | Include the copyright and permission notices in distributions | `THIRD_PARTY_NOTICES.md` |
+| Geist font files via `next/font` | Font files self-hosted in the build output | SIL Open Font License 1.1 | Distribute the copyright and license with the fonts; do not sell the fonts on their own; do not use the reserved font name for modified versions | `THIRD_PARTY_NOTICES.md` carries the OFL text. The fonts are used unmodified |
+| Runtime libraries minified into the client bundle: `react`, `react-dom`, `next`, `zustand`, `radix-ui`, `clsx`, `tailwind-merge` | npm dependencies | MIT | Keep the copyright and permission notice | `THIRD_PARTY_NOTICES.md` |
+| `class-variance-authority` | npm dependency, minified into the client bundle | Apache-2.0 | Provide a copy of the license, and the package's `NOTICE` file if it has one | `THIRD_PARTY_NOTICES.md` |
+| Development and test tools (`vitest`, `jsdom`, Testing Library, `@playwright/test`, `@axe-core/playwright`, ESLint, TypeScript) | Not shipped | Various, including MPL-2.0 for `axe-core` | None for distribution, because none of their code is in the build output | — |
+
+Rules:
+- The license of each package is **verified against its installed `LICENSE` file** when it is installed (001 task T001). A license that differs from this table stops the task and is raised to the owner.
+- `THIRD_PARTY_NOTICES.md` lives at the repository root. It is not served, not placed in `public/`, and not rendered in the UI, so it adds no third-party names to a public-facing surface. An in-app licenses screen belongs to the About section (feature 010).
+- Any later feature that copies code or assets, or adds a runtime dependency, adds a row here and updates `THIRD_PARTY_NOTICES.md` in the same change.
+- The neutral app icon (`src/app/icon.svg`) is original work, so it needs no entry.
+
 ## 3. Layers and dependency rules
 
 | Layer | Folder | Contains | May import |
@@ -320,6 +340,7 @@ The Media Session adapter does the following:
 **Loading states:**
 - Each async surface has exactly one of these states: `loading` (skeleton), `empty`, `error` (message plus retry) or `ready`.
 - A skeleton appears only after 150 ms, to avoid flicker.
+- Skeletons are driven by explicit `AsyncViewState` updates, not by React Suspense fallbacks. React 19 holds back the reveal of suspended content until about 300 ms after its fallback appeared, so a Suspense fallback carrying a 150 ms delayed skeleton would become visible even for loads under 150 ms (001 research R9). A feature that wants to use Suspense for a skeleton must first show, with a measurement recorded in its plan, that this limit is still met.
 - Copy and layouts are in [ux-specification.md §7](ux-specification.md#7-loading-empty-and-error-states).
 
 **Storage unavailable:** if IndexedDB cannot be opened (some private modes), the app runs in memory and shows a banner saying data will not be saved.

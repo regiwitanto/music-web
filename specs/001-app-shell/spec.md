@@ -172,7 +172,8 @@ Before their features are built, each destination shows a clear placeholder: a h
 - **Crossing a breakpoint.** When the window is resized (or a device rotated) from mobile to desktop width and back, the active destination and the current page are preserved and the navigation form switches. Focus is not lost to the document start if the focused element still exists.
 - **Theme storage unavailable** (private mode, blocked storage). Theme and accent still switch for the session. After a reload the app falls back to System and Violet without errors.
 - **A stored theme or accent value that is unknown or corrupt.** The app ignores it and uses the defaults.
-- **Slow start-up** (slow device or network). Whatever content becomes visible first is already in the persisted theme and accent, and the navigation is visible.- **Long public name.** The name truncates in the sidebar, and the full name stays available to assistive technology.
+- **Slow start-up** (slow device or network). Whatever content becomes visible first is already in the persisted theme and accent, and the navigation is visible.
+- **Long public name.** The name truncates in the sidebar, and the full name stays available to assistive technology.
 - **Red accent.** Destructive actions are never shown through colour alone. They always carry an icon and a label, so they stay distinguishable from accent-coloured elements.
 - **Re-selecting the active destination while already at the top of its root page.** Nothing happens. There is no reload and no focus jump.
 

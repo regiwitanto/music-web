@@ -117,7 +117,7 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
 ## R6. Settings state and the repository seam
 
 - **Decision.**
-  - **Store.** A Zustand v5 store, `useSettingsStore` (`src/application/stores/settings.ts`), holds `appearance: AppearancePreference` plus `setAppearance`.
+  - **Store.** A Zustand v5 store, `useSettingsStore` (`src/application/stores/settings.ts`), holds `appearance: AppearancePreference` plus `setAppearance`. The module also exports `createSettingsStore(deps)`, a factory that takes the repository and the theme target. The app singleton is `createSettingsStore(container)`, and tests build a fresh store per test with fakes, so no module-level state leaks between tests (analysis finding U1).
   - **Repository.** Persistence is behind `AppearanceRepository` (`load(): AppearancePreference`, `save(p): void`), defined in `src/application/ports.ts`. It has two implementations:
     - `LocalStorageAppearanceRepository` in `src/infrastructure/platform/appearance-storage.ts`;
     - `InMemoryAppearanceRepository` in `src/test/fakes/`.
@@ -154,7 +154,8 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
 
 - **Decision.**
   - **Delayed skeleton.** `DelayedSkeleton` is a CSS-only wrapper: `opacity:0` plus `animation: reveal 0s linear 150ms forwards`. Loads under 150 ms never show it (FR-035), with no timers or JS. Under reduced motion it reveals without a transition.
-  - **Async views.** `AsyncView` is a presentational switch over `AsyncViewState` (data-model §5) that guarantees exactly one of `loading | empty | error | ready` is rendered. For 001, destinations render `empty` synchronously. The loading path is exercised through the test fault hook (R10), which suspends inside a `<Suspense fallback={<DelayedSkeleton/>}>`.
+  - **Async views.** `AsyncView` is a presentational switch over `AsyncViewState` (data-model §5) that guarantees exactly one of `loading | empty | error | ready` is rendered. For 001, destinations render `empty` synchronously. The loading path is exercised through the test hold hook (R10). It drives the `AsyncView` state with ordinary React state updates: `loading` while the test holds the load, then `empty` as soon as the test releases it. It does **not** use Suspense, and no timer decides when loading ends.
+  - **Why not Suspense (amended 2026-11-05, analysis finding X3).** The installed `react-dom` 19.3.0 holds back the commit that reveals suspended content until 300 ms after the last fallback was shown (`globalMostRecentFallbackTime + 300` in `react-dom-client.production.js`). With a Suspense fallback, a 100 ms load would keep `DelayedSkeleton` mounted until about 300 ms. Its CSS reveal at 150 ms would then make it visible, which breaks FR-035. An ordinary state update (`setState` from a timer or a resolved promise) is committed at once, so `DelayedSkeleton` is removed before its 150 ms reveal for any load under 150 ms. The 150 ms CSS reveal is unchanged. This constraint is recorded for later features in architecture §11.
   - **Page error.** `src/app/error.tsx` is a Client Component. It is the root segment's error boundary, so it wraps the pages but **not** the root layout (bundled `error.md`), and the shell keeps working. It renders `ErrorState` with "Something went wrong on this page." and a **Retry** that calls the stable `retry()` prop (Next 16.3+), so recovery needs no full reload (FR-036, SC-010).
   - **Whole-app error.** `src/app/global-error.tsx` handles failures in the root layout or shell (FR-037). It:
     - renders its own `<html>`/`<body>`;
@@ -170,13 +171,20 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
 ## R10. Test-only fault and mount hooks
 
 - **Decision.** All hooks are gated by the build-time flag `NEXT_PUBLIC_TEST_HOOKS === '1'`. Next inlines `NEXT_PUBLIC_*` at build time, so with the flag off the code is dead-code-eliminated.
-  - **`TestFault`** (`src/presentation/testing/TestFault.tsx`) is rendered in each placeholder page. It reads `window.__TEST_FAULTS__?.[pathname]` and supports:
-    - `{ mode: 'throw-once' }`: throws during render the first time, then clears itself, so Retry recovers;
-    - `{ mode: 'delay', ms }`: suspends with `use()` on a promise for `ms` milliseconds.
+  - **`TestFault`** (`src/presentation/testing/TestFault.tsx`) is rendered in each placeholder page, and in `AppShell` with the reserved scope `'__shell__'`. It reads `window.__TEST_FAULTS__?.[scope]` and supports only `{ mode: 'throw' }`. It throws on **every** render while the entry exists, and it never changes the entry itself. The test removes the entry (`clearFault`) before it clicks Retry or Reload. *Amended 2026-11-05 (analysis finding X1).* The earlier `throw-once` mode cleared itself on its first throw. React 19 re-renders once synchronously after an error in a concurrent render, and Next navigations are concurrent; the same happens after a hydration error. That second render would succeed, so the error state would never appear. Mutating state during render was also a render side effect.
+  - **`useTestHold`** (`src/presentation/testing/useTestHold.ts`) returns `true` while a `{ mode: 'hold' }` entry exists for the current pathname, and `false` otherwise. `PlaceholderView` shows `loading` while it is `true` and `empty` once it is `false` (R9). *Amended 2026-11-05 (analysis finding C1).* It replaces the earlier `{ mode: 'delay', ms }`, which raced a real timer against the real 150 ms CSS reveal and so broke constitution X's requirement that tests be deterministic.
+    - **Release.** When the flag is on, the module defines `window.__TEST_RELEASE__(key)`. It deletes the hold entry and notifies the hook's subscribers. The hook reads the entry through `useSyncExternalStore`, so the release is committed as an ordinary synchronous update with no timer and no Suspense.
+    - **Client-side mounts only.** The hook records, in a `useState` initializer at its first render, whether the component mounted during a client-only render. It detects this with `useSyncExternalStore(noop, () => true, () => false)`, which returns `false` during hydration. A hold therefore applies only to a page mounted by client-side navigation; on a direct load it is ignored, and server and client markup stay identical. V18 navigates through the nav.
+    - **Hook order and elimination.** Every hook call (`usePathname`, the two `useSyncExternalStore` calls and `useState`) runs unconditionally at the top, in the same order in every build (U1). The subscribe and snapshot functions are chosen with the literal flag check, so a flag-off build contains only no-op functions, and neither global name.
+  - **Deterministic threshold check (C1).** No test depends on wall-clock time to check the 150 ms boundary:
+    - an E2E init script uses a `MutationObserver` to pause the `reveal` animation of every inserted `[data-testid=skeleton]` in the same microtask as its insertion, before the first paint;
+    - the test then sets the animation clock through the Web Animations API. At `currentTime = 149` the computed opacity must be `0`, and at `150` it must be `1`;
+    - releasing the hold while the clock is at 149 must remove the skeleton in that commit, with no frame in which it is visible.
 
-    Playwright sets the global with `page.addInitScript`.
-  - **Mount counters.** `window.__SHELL_MOUNTS__ = { nav, dock }` is incremented in a mount effect of `Sidebar`/`BottomNav` (nav) and `PlayerDock` (dock). It is used for SC-007.
-  - The CI E2E job builds with the flag on. The `scan:branding` script also checks that a flag-off production build contains no `__TEST_FAULTS__` string.
+    In production the reveal animation runs on real time from the moment the skeleton is inserted, and a release is committed immediately. Together, the two checks prove that a load finishing in under 150 ms never shows the skeleton (FR-035).
+  - **Installation.** Playwright installs the faults with `page.addInitScript`, guarded by a `sessionStorage` marker so they are installed **once per tab**. A reload does not reinstall them, which lets the whole-app recovery test reload successfully (analysis finding X2).
+  - **Mount counters** (revised at G4, 2026-11-05). `window.__SHELL_MOUNTS__ = { shell, sidebar, bottomNav, dock }` has one counter per shared shell component, each incremented in that component's mount effect. Every counter must read 1 and never rise during navigation (SC-007). Both navigation forms are always mounted and toggled by CSS (R3), which is why the earlier combined `nav` counter read 2 ([ui-shell.md §7.1](contracts/ui-shell.md#71-shell-mount-counters)).
+  - **Production exclusion** (revised at G4). Each hook checks the literal flag inside its own body so it is eliminated, while still calling its React hooks unconditionally. Only `src/presentation/testing/**` may read the flag (lint). The flag is set only on the CI E2E build step, never in `.env*`, config or deployments. `scan:branding` fails if a flag-off build's `.next/static/**` or `.next/server/**` contains `__TEST_FAULTS__`, `__TEST_RELEASE__`, `__SHELL_MOUNTS__` or `__shell__` ([ui-shell.md §7.2](contracts/ui-shell.md#72-exclusion-from-production-builds)).
 - **Rationale.** The spec explicitly asks for "a test-only hook" (Story 6) and "a test marker that must persist" (Story 2). Both are kept out of the shipped bundle.
 - **Alternatives considered.**
   - *Query parameters (`?__fault=`).* Rejected: they would ship in production and make pages read `searchParams`.
@@ -283,16 +291,26 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
     - `classifyPath`, covering every FR-012 pattern plus each unknown example, and route-file parity;
     - `parseAppearance` (valid, unknown, corrupt, non-JSON, wrong version);
     - `buildThemeBootstrapScript`, executed in a `vm` sandbox with stubbed `localStorage` and `document` for valid, corrupt and throwing storage;
+    - `buildAppearanceSelectionScript`, in a `vm` sandbox, for all 32 combinations (theme.md T12);
     - title formatting;
+    - `createSettingsStore` with fakes, one fresh store per test: apply → save → set order, swallowed save failures, and `reconcile`;
     - the token contrast test;
-    - the lint-rule fixture test.
+    - the no-raw-colours scan of `src/presentation` and `src/app`;
+    - the lint-rule fixture test, including the test-hook isolation rules.
     - Coverage of `src/domain/**` must be ≥ 90%.
   - **Component (Vitest + jsdom + RTL).**
     - `NavItem`: `aria-current`, accessible name, re-select scroll behaviour;
     - `Sidebar`: collapse toggle name and state;
     - `AppearanceSettings`: radiogroup roles, names, and applying to `<html>` synchronously;
+    - `BottomNav`: four labelled items in order;
+    - `NothingHereYet`: heading and the "Go to {Destination}" link;
+    - `SkipLink` and `RouteFocus`: focus targets;
+    - `AppearanceSettings`: the module is re-imported after `vi.resetModules()` with a freshly imported, configured container;
     - `ErrorState` and `EmptyState`: copy and Retry;
-    - `DelayedSkeleton`: style;
+    - `DelayedSkeleton`: style (`opacity: 0` with the 150 ms `reveal` animation);
+    - `AsyncView`: exactly one of the four states;
+    - `PlaceholderView`: `empty` with no hold; with a hold, `loading` then `empty` straight after `__TEST_RELEASE__`, never both;
+    - test hooks: `TestFault` throws on every render while the entry exists; with the flag off, `TestFault`, `useTestHold` and `recordShellMount` are inert;
     - `PlayerDock`: region label, no focusable descendants.
   - **E2E (Playwright).**
     - **Server.** `next build && next start` with `NEXT_PUBLIC_TEST_HOOKS=1`. Production mode avoids Strict Mode double mounts that would corrupt SC-007 counts.
@@ -304,14 +322,18 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
       - `a11y.spec.ts`: Story 3 and SC-003; axe on every root, one reserved address and Not Found, × Light/Dark/OLED; tab order; focus to `h1`; 44/24 px target sizes via bounding boxes;
       - `theme.spec.ts`: Story 4, SC-004, SC-005;
       - `dock.spec.ts`: Story 5;
-      - `states.spec.ts`: Story 6, SC-010, via `TestFault`;
+      - `states.spec.ts`: Story 6, SC-010, via `TestFault` (throw) and `useTestHold` (hold and release, with the reveal animation clock controlled through the Web Animations API);
       - `branding.spec.ts`: SC-006 DOM part.
-  - **No-flash method (SC-004).** For each theme, run 10 cold loads in a fresh context:
+  - **No-flash method (SC-004).** For each theme, run 10 cold loads in a fresh context, on the desktop project of each engine (Chromium, Firefox and WebKit). The mobile projects skip this suite, which keeps the run time bounded (analysis finding P1). It is still 10 loads per theme per engine:
     1. Seed `localStorage` via `addInitScript`.
-    2. Route all `/_next/static/**/*.js` requests through a handler that holds them for 3 s, so React cannot hydrate.
+    2. Route all `/_next/static/**/*.js` requests through a handler that holds them **until the test explicitly releases them**. There is no timeout, so React cannot hydrate however slow the runner is. *(Amended 2026-11-05, analysis finding H1. The earlier 3-second hold could expire before the assertions on a slow CI runner, and the tests would then pass after hydration without proving the pre-hydration guarantee.)*
     3. Wait for `domcontentloaded`.
-    4. Assert `getComputedStyle(document.body).backgroundColor` equals the expected token, and that `<html>` has the expected `data-theme`/`data-accent`.
-    5. Take a screenshot and sample a pixel of the page background and of the sidebar's active-item accent.
+    4. **Verify that hydration has not happened:** at least one chunk request is held, and none has been fulfilled. Without this check the next steps are not valid.
+    5. Assert `getComputedStyle(document.body).backgroundColor` equals the expected token, and that `<html>` has the expected `data-theme`/`data-accent`.
+    6. Take a screenshot and sample a pixel of the page background and of the sidebar's active-item accent.
+    7. Release the held requests explicitly. A Playwright fixture's teardown also releases them and removes the route on failure or timeout, so nothing stays blocked between tests.
+
+    The same hold, check, assert and release sequence is used for the R15 first-paint selection check (theme.md T9, quickstart V25).
 
     A `MutationObserver` installed by an init script records every `data-theme` and `data-accent` value ever set before `load`. Each value seen must be either the server default before any `<body>` content exists, or the persisted value.
   - **Live System switch (Story 4 scenario 4).** `page.emulateMedia({ colorScheme })` toggled at runtime.
