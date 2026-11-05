@@ -22,7 +22,7 @@ The roadmap has no calendar dates. The pace is personal, so each phase ends at i
 | | |
 |---|---|
 | **Objectives** | Understand the reference app. Fix the product scope, information architecture, architecture and source policy before writing any code. |
-| **Scope** | Documentation only. No feature specs, no app code, no Spec Kit commands. |
+| **Scope** | Documentation only. No feature specs and no app code. (Spec Kit was installed during this phase; SDD initialization — constitution, feature index, first spec — followed on 2026-11-05.) |
 | **Deliverables** | The 8 documents in `docs/`. Decisions D1–D5, approved 2026-11-05 ([product-requirements.md §9](product-requirements.md#9-decisions-approved-by-the-owner-2026-11-05)). |
 | **Dependencies** | None. |
 | **Acceptance criteria** | All 8 docs exist and link to each other. Every feature has an ID and a priority. Each phase has a gate. Audit findings are tagged Confirmed or Inferred. No contradictions on the 4-destination IA or the source policy. |
@@ -112,22 +112,8 @@ The roadmap has no calendar dates. The pace is personal, so each phase ends at i
 | **P1** | — | — | — | HOME-08/09, EXP-09 | NP-11/14/15, SHELL-03, LIB-11/12, SET-06, PLAT-03/04, SHELL-04 help | PLAT-05, items reprioritized from feedback |
 | **P2** | — | — | — | — | — | Not scheduled: SRC-04, EXP-10, LIB-13, NP-16/17, sync, Android |
 
-## Proposed Spec Kit feature breakdown (for the next phase)
+## Spec Kit feature breakdown
 
-These are names only, not specs. Specs will be created later with `/speckit-specify`, one per feature, in this order:
+> **Superseded on 2026-11-05** by the owner-approved feature index in [specs/README.md](../specs/README.md). That file now owns the feature list, its order, the feature-ID mapping and the dependencies. The earlier 13-name proposal is kept in git history.
 
-1. `001-app-shell-and-design-tokens` (Phase 01)
-2. `002-mock-catalog-and-provider-registry` (Phase 02)
-3. `003-explore-search-and-browse` (Phase 02)
-4. `004-library-and-playlists` (Phase 02)
-5. `005-home-sections-mock` (Phase 02)
-6. `006-playback-engine-and-queue` (Phase 03)
-7. `007-now-playing-ui` (Phase 03)
-8. `008-local-files-storage-and-sample-audio` (Phase 03; includes quota handling and storage management)
-9. `009-backup-export-import` (Phase 03)
-10. `010-history-based-recommendations` (Phase 04)
-11. `011-pwa-and-offline-shell` (Phase 05)
-12. `012-lyrics-and-polish` (Phase 05)
-13. `013-beta-diagnostics` (Phase 06)
-
-Before `001`, run `/speckit-constitution`. Its principles are drawn from the engineering principles in the master brief, plus [architecture.md §3](architecture.md#3-layers-and-dependency-rules) and [product-requirements.md §6](product-requirements.md#6-music-source-policy).
+The constitution has been ratified: [.specify/memory/constitution.md](../.specify/memory/constitution.md) (v1.0.0).

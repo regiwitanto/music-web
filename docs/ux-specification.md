@@ -231,7 +231,7 @@ Copy tone: plain, short, no blame, and always offers a next step.
 - Contrast targets are in [design-system.md §2](design-system.md#2-color).
 - The minimum pointer target is 24×24 px. Touch-primary controls (mobile player, nav) are **44×44 px**.
 - Use landmarks: `nav` for the sidebar and bottom nav, `main` for content, `region` with the label "Player" for the player bar, `complementary` for the queue.
-- "Skip to content" and "Skip to player" links are the first focusable elements.
+- "Skip to content" is the first focusable element. "Skip to player" follows it once the player has interactive controls (feature 008). While the dock is an idle, non-interactive placeholder, there is no "Skip to player" link.
 - On route change, focus moves to the page `h1` (`tabIndex=-1`), and a polite live region announces the page title.
 - **Dialogs and the sheet** use Radix Dialog: focus is trapped, Esc closes, focus returns to the trigger, and the background is inert.
 - **Sliders** (seek, volume) use Radix Slider:
@@ -272,7 +272,7 @@ Each criterion is verifiable by an automated or scripted manual test (see [testi
 | UX-AC-07 | Keyboard | Every interactive element is reachable with Tab or Shift+Tab, in a logical order, with a visible focus ring of ≥ 3:1 contrast. Every P0 user flow in the test plan can be completed **keyboard-only**. |
 | UX-AC-08 | Keyboard | Every shortcut in §8 works and does not fire while typing in an input. |
 | UX-AC-09 | Accessibility | axe-core reports **0 serious or critical violations** on every destination and detail page, in all three themes. |
-| UX-AC-10 | Theme | Switching theme or accent updates the UI within one frame without reloading, persists across reload, and shows **no flash** of the wrong theme on a cold load. |
+| UX-AC-10 | Theme | Switching theme or accent takes effect immediately across the whole visible UI, with no reload or Save. The choice persists across reload. On initial load, the persisted theme and accent are applied before any app content becomes visible, so there is **no visible flash** of the wrong theme. |
 | UX-AC-11 | Theme | Every text/background token pair meets AA in Light, Dark and OLED ([design-system.md §2](design-system.md#2-color)). OLED uses `#000000` for the page background. |
 | UX-AC-12 | Library persistence | Likes, playlists (name, order, items), saved albums and artists, settings, recent searches and the player snapshot all survive a hard reload and a browser restart. Verified by comparing a backup export before and after (equal except for timestamps). |
 | UX-AC-13 | Library persistence | Export, then reset, then import restores an identical library (verified the same way). |
