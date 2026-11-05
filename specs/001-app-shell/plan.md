@@ -55,7 +55,7 @@ Details are in [research.md](research.md) (R1–R15).
 
 ## Technical Context
 
-**Language/Version**: TypeScript 5 (`strict`, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`), React 19.3, Node 20 LTS
+**Language/Version**: TypeScript 5 (`strict`, plus `noUncheckedIndexedAccess`, `exactOptionalPropertyTypes`, `noImplicitOverride`), React 19.3, Node 24 LTS (changed from Node 20 LTS by the owner on 2026-11-05 during T001: Node 20 is end-of-life, and the approved test tools Vitest 5, jsdom 30 and jest-dom 7 require Node ≥ 22)
 
 **Primary Dependencies**:
 - Next.js 16.4.5 (App Router; **no** `cacheComponents`, **no** `output: 'export'`)

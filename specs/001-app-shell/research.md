@@ -83,7 +83,7 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
 ## R4. Theme bootstrap with no flash (ADR-009)
 
 - **Decision.**
-  - **Bootstrap script.** A synchronous inline `<script>` is the first child of `<head>`. Its body is a string produced by `buildThemeBootstrapScript()`, which embeds the allowed theme and accent lists from the domain constants, so the script and the TypeScript validation can never drift. The script:
+  - **Bootstrap script.** A synchronous inline `<script>` is the first element the layout renders in `<head>`. React 19 always places the charset, viewport, preloads, the stylesheet, async chunk tags and `<title>` ahead of other head children, so it cannot be literally the first child; it still runs while the parser is in `<head>`, before any `<body>` content exists, and so before first paint (corrected during T041, 2026-11-05; V12/T3 verifies the guarantee). Its body is a string produced by `buildThemeBootstrapScript()`, which embeds the allowed theme and accent lists from the domain constants, so the script and the TypeScript validation can never drift. The script:
     1. reads the localStorage key `mp.appearance` inside a `try/catch`;
     2. parses the stored versioned JSON and validates each field against the allowed lists;
     3. sets `data-theme` and `data-accent` on `<html>`;
@@ -222,11 +222,12 @@ The Technical Context has no `NEEDS CLARIFICATION`. Every unknown is resolved be
   | Files | Rule | Restricts |
   |---|---|---|
   | `src/domain/**` | `no-restricted-imports` | `react*`, `next*`, `zustand`, `dexie*`, `@/application/*`, `@/infrastructure/*`, `@/presentation/*`, `@/app/*` |
-  | `src/domain/**` | `no-restricted-globals` | `window`, `document`, `localStorage`, `navigator`, `matchMedia` |
+  | `src/domain/**` | `no-restricted-globals` | `window`, `document`, `localStorage`, `sessionStorage`, `navigator`, `matchMedia` |
   | `src/application/**` | — | may not import `@/presentation/*`, `@/app/*` or `@/infrastructure/*` (`container.ts` is the sole exception) |
   | `src/infrastructure/**` | — | may not import `@/application/*` (except `ports.ts` types), `@/presentation/*` or `@/app/*` |
   | `src/app/**`, `src/presentation/**` | `@typescript-eslint/no-restricted-imports` | `@/domain/*` with `allowTypeImports: true` (types only), and `@/infrastructure/*` entirely |
 
+- **Added during implementation (T008, 2026-11-05).** Every file in `src/` also bans parent-relative imports (`../…`), so the alias-based layer rules cannot be bypassed with a relative path, and bans `@/test/*` outside `src/test/` (ui-shell.md §7.2). Only `src/presentation/testing/**` may read `NEXT_PUBLIC_TEST_HOOKS`.
 - **Verification.** A fixture test (`tests/lint/layers.test.ts`) runs ESLint's Node API on small in-memory snippets and asserts that each forbidden import is reported. This proves the rules bite (roadmap Phase 01 acceptance: "Lint rules block `domain/` from importing React or Dexie").
 - **Consequence for presentation.** Presentation needs runtime values that are defined in the domain: `DESTINATIONS`, the theme and accent lists, and `APP_DISPLAY_NAME`. These are re-exported through a thin application facade, `src/application/shell.ts`, so presentation imports runtime values only from `application`.
 - **Alternatives considered.** *`eslint-plugin-boundaries` or `dependency-cruiser`.* Rejected: a new dependency, and the built-in rules suffice.

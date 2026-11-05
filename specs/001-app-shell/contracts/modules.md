@@ -63,7 +63,8 @@ export interface SettingsState {
   reconcile(): void;                                   // after mount: load repository, apply only if it differs
   setAppearance(next: Partial<AppearancePreference>): void;  // apply DOM → save → set (research R5)
 }
-export function createSettingsStore(deps: { appearance: AppearanceRepository; themeTarget: DocumentThemeTarget }):
+export function createSettingsStore(deps: { appearance: AppearanceRepository; themeTarget: DocumentThemeTarget },
+                                    options?: { server?: boolean }):   // server defaults to `typeof document === 'undefined'`; when true, appearance is null
   UseBoundStore<StoreApi<SettingsState>>;              // factory; tests build a fresh store per test (U1)
 export const useSettingsStore: UseBoundStore<StoreApi<SettingsState>>;   // = createSettingsStore(container)
 

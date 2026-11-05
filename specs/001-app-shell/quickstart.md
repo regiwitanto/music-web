@@ -6,7 +6,7 @@ This is a run-and-verify guide for the implemented feature. It proves every user
 
 ## 1. Prerequisites
 
-- Node 20 LTS or later, and pnpm 12 (`packageManager` in `package.json`).
+- Node 24 LTS, and pnpm 12 (`packageManager` in `package.json`).
 - Playwright browsers: `pnpm exec playwright install --with-deps chromium firefox webkit`.
 - For the manual checks: VoiceOver on macOS and iOS, plus NVDA (Windows) or TalkBack (Android).
 

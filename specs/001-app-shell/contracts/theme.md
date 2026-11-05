@@ -33,7 +33,7 @@ Implements FR-018 to FR-023, Story 4 and SC-004/SC-005. Values come from [design
 4. otherwise leaves the attributes untouched;
 5. never throws, never writes storage, and never touches anything except those two attributes.
 
-It is placed as the **first child of `<head>`** in `src/app/layout.tsx`, and is also embedded in `src/app/global-error.tsx`.
+It is placed as the first element the layout renders in `<head>`. React 19 always places the charset, viewport, preloads, the stylesheet, async chunk tags and `<title>` ahead of other head children, so it cannot be literally the first child; it still runs while the parser is in `<head>`, before any `<body>` content exists, and so before first paint (corrected during T041, 2026-11-05; V12/T3 verifies the guarantee). It is in `src/app/layout.tsx`, and is also embedded in `src/app/global-error.tsx`.
 
 ## 4. CSS tokens
 
@@ -70,7 +70,7 @@ The tokens are:
 | Text | `text-text`, `text-muted`, `text-accent`, `text-on-accent`, `text-danger` |
 | Borders and rings | `border-strong`, `border-divider`, `ring-accent`, `outline-accent` |
 
-**Rule:** components use only these semantic utilities. No raw hex values and no Tailwind palette colours (`zinc-*`, etc.) may appear in `src/presentation` or `src/app` [FR-023]. A unit test greps those folders for `#[0-9a-f]{3,8}` and the default palette class names, allowing only `globals.css`.
+**Rule:** components use only these semantic utilities. No raw hex values and no Tailwind palette colours (`zinc-*`, etc.) may appear in `src/presentation` or `src/app` [FR-023]. A unit test greps those folders for `#[0-9a-f]{3,8}` and the default palette class names, allowing only `globals.css`. In addition, `globals.css` removes Tailwind's default palette (`--color-*: initial`), so palette classes do not exist in the build (added during T032). shadcn's `muted` and `accent` aliases stay CSS-only, because as Tailwind colours they would clash with `text-muted` and the brand `accent`.
 
 ## 5. Appearance controls (Settings → Appearance)
 

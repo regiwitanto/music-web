@@ -49,6 +49,11 @@ Everything happens in the browser. There is no backend. The browser layer has th
 | `zod` | Validates backup import files and provider responses (SET-04). | Hand-written validation duplicates the types. |
 | `fake-indexeddb` (dev only) | Lets Dexie repositories be tested under Vitest. | — |
 | `@axe-core/playwright` (dev only) | Automated accessibility checks. | — |
+| `clsx`, `tailwind-merge`, `class-variance-authority` | Mandatory helpers of the approved shadcn/ui components: `cn()` merges class names and resolves Tailwind conflicts, and `cva` defines Button variants. Approved by the owner 2026-11-05 (001 plan). | Hand-written class merging would diverge from the generated components. |
+| `@vitejs/plugin-react` (dev only) | JSX transform for Vitest, as in the bundled Next.js Vitest guide. Approved 2026-11-05 (001 plan). | — |
+| `@testing-library/user-event` (dev only) | Realistic keyboard and pointer interaction in component tests (test plan §2). Approved 2026-11-05 (001 plan). | `fireEvent` does not model real key sequences or focus movement. |
+| `@testing-library/jest-dom` (dev only) | DOM assertions such as `toHaveAttribute` and `toBeVisible`. Approved 2026-11-05 (001 plan). | — |
+| `@vitest/coverage-v8` (dev only) | Coverage reporting for gate G7 (≥ 90% of `domain/`). Approved 2026-11-05 (001 plan). | — |
 
 **Not adopted:**
 - a React Query/SWR-style data library (provider calls are few and local)
@@ -68,6 +73,7 @@ Recorded 2026-11-05 as part of the 001 plan amendment (analysis finding K1). It 
 | Geist font files via `next/font` | Font files self-hosted in the build output | SIL Open Font License 1.1 | Distribute the copyright and license with the fonts; do not sell the fonts on their own; do not use the reserved font name for modified versions | `THIRD_PARTY_NOTICES.md` carries the OFL text. The fonts are used unmodified |
 | Runtime libraries minified into the client bundle: `react`, `react-dom`, `next`, `zustand`, `radix-ui`, `clsx`, `tailwind-merge` | npm dependencies | MIT | Keep the copyright and permission notice | `THIRD_PARTY_NOTICES.md` |
 | `class-variance-authority` | npm dependency, minified into the client bundle | Apache-2.0 | Provide a copy of the license, and the package's `NOTICE` file if it has one | `THIRD_PARTY_NOTICES.md` |
+| Transitive packages bundled with the above: `scheduler`, the `@radix-ui/*` primitives used by Tooltip and Slot, `@floating-ui/*` (MIT); `@swc/helpers` (Apache-2.0); `tslib` (0BSD) | Pulled in by `react-dom`, `radix-ui` and `next`, and minified into the client bundle | MIT, Apache-2.0, 0BSD | MIT and Apache-2.0 as above; 0BSD has no attribution requirement (included anyway) | `THIRD_PARTY_NOTICES.md`. Added 2026-11-05 during 001 T001, after checking the installed dependency tree |
 | Development and test tools (`vitest`, `jsdom`, Testing Library, `@playwright/test`, `@axe-core/playwright`, ESLint, TypeScript) | Not shipped | Various, including MPL-2.0 for `axe-core` | None for distribution, because none of their code is in the build output | — |
 
 Rules:
@@ -104,9 +110,14 @@ src/
     components/shell/           # Sidebar, BottomNav, AppShell, PlayerBar
     components/player/          # MiniPlayer, NowPlaying, QueuePanel, SeekBar
     components/media/           # TrackRow, MediaCard, ArtworkImage, sections
+    components/states/          # EmptyState, ErrorState, NothingHereYet, DelayedSkeleton, AsyncView
     hooks/
+    lib/cn.ts                   # class-name helper (shadcn)
+    testing/                    # test hooks, flag-gated by NEXT_PUBLIC_TEST_HOOKS (001 ui-shell.md §7)
   application/
-    container.ts                # wires up infrastructure
+    container.ts                # wires up infrastructure (the only file that may import it)
+    ports.ts                    # repository and platform interfaces implemented by infrastructure
+    shell.ts                    # runtime facade: domain values that presentation may use
     stores/                     # player.ts, ui.ts, settings.ts
     playback/PlaybackController.ts
     use-cases/                  # library.ts, playlists.ts, import-local.ts, backup.ts, history.ts
@@ -120,8 +131,14 @@ src/
     db/schema.ts  db/repositories/*.ts
     providers/{mock,local,sample}/  providers/registry.ts
     platform/capabilities.ts
-  test/fixtures/
+  test/fixtures/  test/fakes/   # test data and in-memory fakes (never imported by app code)
+tests/                          # cross-cutting suites at the repository root (001)
+  unit/  component/  lint/  e2e/  setup/
+scripts/scan-branding.mjs       # branding and test-hook build scan
+THIRD_PARTY_NOTICES.md          # license notices (§2 license review)
 ```
+
+**Notes (added with feature 001).** Presentation may import only *types* from `domain/`; runtime domain values reach it through `application/shell.ts` (research R12 of 001). Co-located `*.test.ts` files remain allowed, but 001 keeps all suites in `tests/` so the lint layer rules need no test-file exceptions inside `src/`. Parent-relative imports (`../`) are not allowed in `src/`, so the layer rules cannot be bypassed.
 
 ## 5. Domain model
 
