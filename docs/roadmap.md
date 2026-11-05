@@ -1,0 +1,133 @@
+# Development Roadmap
+
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05
+> **Owns:** phase sequencing, the scope of each phase (by feature ID), deliverables, dependencies, acceptance criteria, Definition of Done, risks, and the proposed Spec Kit feature breakdown.
+> **Related:** feature IDs and priorities in [product-requirements.md §5](product-requirements.md#5-features-and-priorities) · UX criteria (UX-AC-xx) in [ux-specification.md §9](ux-specification.md#9-measurable-ux-acceptance-criteria) · test approach in [testing/test-plan.md](testing/test-plan.md)
+
+The roadmap has no calendar dates. The pace is personal, so each phase ends at its gate, not on a date.
+
+## Global Definition of Done (applies to every phase from 01 on)
+
+- `pnpm lint`, `pnpm typecheck` (`tsc --noEmit`) and `pnpm test` pass locally, and in CI once it is set up in Phase 01.
+- New domain and application logic has unit tests. Each new user flow has at least one E2E test, or a recorded manual script when E2E isn't practical.
+- axe reports no serious or critical issues on any touched page.
+- The touched UX-AC criteria are verified, and the results are recorded in the feature's spec or PR. **Never claim tests passed unless they actually ran.**
+- Docs are updated whenever a decision, ID or contract changes.
+- No new dependency is added without a justification line in [architecture.md §2](architecture.md#2-technology-stack-evaluation).
+
+---
+
+## Phase 00 — Research & Foundation *(this phase)*
+
+| | |
+|---|---|
+| **Objectives** | Understand the reference app. Fix the product scope, information architecture, architecture and source policy before writing any code. |
+| **Scope** | Documentation only. No feature specs, no app code, no Spec Kit commands. |
+| **Deliverables** | The 8 documents in `docs/`. Decisions D1–D5, approved 2026-11-05 ([product-requirements.md §9](product-requirements.md#9-decisions-approved-by-the-owner-2026-11-05)). |
+| **Dependencies** | None. |
+| **Acceptance criteria** | All 8 docs exist and link to each other. Every feature has an ID and a priority. Each phase has a gate. Audit findings are tagged Confirmed or Inferred. No contradictions on the 4-destination IA or the source policy. |
+| **Definition of Done** | ✅ The owner reviewed the docs and approved D1–D5 (2026-11-05). The docs reflect those decisions. |
+| **Risks** | Over-specifying before validating the UX. *Mitigation:* the UX-AC criteria are measurable, but layouts may still change during Phases 01–02. |
+
+## Phase 01 — Design System & App Shell
+
+| | |
+|---|---|
+| **Objectives** | Tooling, tokens and a responsive shell with the 4 destinations, before any real features. |
+| **Scope** | SHELL-01, SHELL-02, SHELL-05; SET-01 and SET-02 (theme and accent switching only); PLAT-02 baseline; the design-system tokens and base components. |
+| **Deliverables** | Constitution (via Spec Kit). Tooling: Vitest, RTL, Playwright, ESLint layer rules, CI workflow. Tokens in `globals.css`. shadcn setup. Sidebar, BottomNav, an empty PlayerBar placeholder, and placeholder pages for the 4 destinations. Theme bootstrap with no flash (ADR-009). Folder layout ([architecture.md §4](architecture.md#4-folder-layout)). The `APP_DISPLAY_NAME` constant, used in `<title>` and metadata (ADR-010), replaces the scaffold's "Create Next App" metadata. A standard `next build` with **no** `output: 'export'` (D1). |
+| **Dependencies** | Phase 00 sign-off. |
+| **Acceptance criteria** | UX-AC-05 (shell only), UX-AC-07 (shell), UX-AC-09, UX-AC-10, UX-AC-11, UX-AC-25 (branding scan in CI). Lint rules block `domain/` from importing React or Dexie. |
+| **Definition of Done** | Global DoD, plus a Playwright smoke test that navigates all 4 destinations in Chromium, Firefox and WebKit at mobile and desktop widths. |
+| **Risks** | Next 16 API differences. *Mitigation:* read the bundled docs first. shadcn and Tailwind v4 integration friction. *Mitigation:* pin versions and add components one at a time. |
+
+## Phase 02 — Core UI & Navigation (mock data)
+
+| | |
+|---|---|
+| **Objectives** | Every screen built with the mock provider, every state visible, with no real audio yet. |
+| **Scope** | SRC-01 (MockProvider and fixtures); ProviderRegistry; HOME-01, -02, -04 to -07 (mock-driven, with empty history); EXP-01 to EXP-08; LIB-01 to -08 *UI* running on Dexie (likes, playlists, library items, recent searches); SET-05; context menus; toasts; loading, empty and error states. |
+| **Deliverables** | Home, Explore (search, filters, genre, mood, artist, album), Library (types, sort, filter, search, playlist CRUD), Settings (Appearance and About). Dexie schema v1 (all tables). Mock fixture generator script. |
+| **Dependencies** | Phase 01. |
+| **Acceptance criteria** | UX-AC-14, UX-AC-15, UX-AC-22, UX-AC-23 (without keyboard reorder); UX-AC-12 for library data; mock failure injection shows every error state. |
+| **Definition of Done** | Global DoD. Provider contract tests pass against MockProvider. |
+| **Risks** | Fixtures don't feel realistic, so Home and Explore can't be judged well. *Mitigation:* a reasonably sized catalog and generated artwork. Scope creep into recommendation logic. *Mitigation:* use mock rules only until Phase 04. |
+
+## Phase 03 — Playback & Local Data
+
+| | |
+|---|---|
+| **Objectives** | Reliable playback of local and sample audio, with a correct queue, a persistent player and OS media controls. |
+| **Scope** | SRC-02, SRC-03; LIB-09 (pointer and keyboard), LIB-10; NP-01 to NP-10, NP-12, NP-13; SHELL-04 shortcuts; SET-03; SET-04 (export, import, reset); **SET-07 storage management and PLAT-06 quota handling** (D2); PLAT-01 (player snapshot); HOME-03 Continue Listening; recording play events. |
+| **Deliverables** | `AudioEngine` (Html and Fake), `PlaybackController`, the domain queue module plus property tests, the MediaSession adapter, capability detection, local import (`music-metadata`) into IndexedDB/Dexie, the storage use case plus the Storage settings screen ([architecture.md §12.1](architecture.md#121-storage-quota-handling)), generated test-tone fixtures, mini player, expanded player, queue panel and tab, backup round-trip. **Sample audio:** the first vetted CC0 / CC BY tracks, plus `LICENSES.json` and the license-manifest test ([provider-contract.md §9.3](provider-contract.md#93-sampleprovider-sample--src-03)). Each track is downloaded only after it passes the vetting checklist. |
+| **Dependencies** | Phase 02 (screens, Dexie). D2 and D3 are approved; sample tracks still need per-track vetting by the owner. |
+| **Acceptance criteria** | UX-AC-01 to UX-AC-04, UX-AC-06, UX-AC-08, UX-AC-13, UX-AC-16 to UX-AC-20, UX-AC-23 (keyboard reorder), UX-AC-24. |
+| **Definition of Done** | Global DoD. The manual audio and storage matrix ([testing/test-plan.md §6](testing/test-plan.md#6-browser-audio-limitations-matrix)) has been run on real browsers covering the D4 targets: desktop Chrome, Edge, Firefox and Safari, an iPhone with iOS Safari 17+, and an Android Chrome phone. Results are recorded with versions. |
+| **Risks** | iOS background audio and Media Session gaps. Storage quota limits and eviction for large local libraries. Codec differences, especially WebKit on Linux in CI. Not enough verifiable CC0 / CC BY samples (A4). *Mitigation:* MP3 samples, real-device checks, quota handling with clear messages, and hiding the sample action when no samples exist. |
+
+## Phase 04 — Discovery & Personalization
+
+| | |
+|---|---|
+| **Objectives** | Home sections driven by real listening history, using deterministic rules. |
+| **Scope** | HOME-05, HOME-06 and HOME-07 switch from mock rules to history-based ones ([architecture.md §6](architecture.md#6-recommendation-rules)); HOME-08 (P1); HOME-09 (P1); EXP-09 suggestions (P1). |
+| **Deliverables** | The `domain/recommendations` module with unit tests, play-event pruning, cold-start fallbacks, and a debug view (dev only) that shows why an item was recommended. |
+| **Dependencies** | Phase 03 (play events). |
+| **Acceptance criteria** | Rules are deterministic for given inputs and seed (unit tests). Cold start shows the mock fallback. Recommendations never include tracks that cannot be played unless they are labelled "Preview only". Computing Home takes ≤ 50 ms for 10k play events (benchmark test). |
+| **Definition of Done** | Global DoD. |
+| **Risks** | A small catalog makes the rules look repetitive. *Mitigation:* per-artist caps and rotating by date seed. |
+
+## Phase 05 — UX Polishing & PWA
+
+| | |
+|---|---|
+| **Objectives** | A polished, installable experience whose shell works offline. Close the accessibility and performance gaps. |
+| **Scope** | NP-04 refinement, NP-15, NP-11 (LRC lyrics), NP-14 sleep timer, SHELL-03, SHELL-04 help dialog, LIB-11, LIB-12, SET-06, PLAT-03, PLAT-04, motion polish, gesture polish (swipe to skip in the mini player). |
+| **Deliverables** | `app/manifest.ts` (name and short name from `APP_DISPLAY_NAME`; original icons with no third-party branding), icons, a service worker that caches the app shell (following the bundled `progressive-web-apps.md`), an offline banner, the artwork colour sampler, the lyrics panel, and a performance pass. |
+| **Dependencies** | Phase 03. Phase 04 is preferred but not required. |
+| **Acceptance criteria** | UX-AC-21 (performance budgets). Lighthouse PWA installability passes. The shell loads offline and local tracks play offline. All UX-AC from earlier phases still pass (regression). |
+| **Definition of Done** | Global DoD, plus a full regression run. |
+| **Risks** | Service-worker caching bugs serve a stale app. *Mitigation:* versioned caches, an "Update available" prompt, and a kill switch. |
+
+## Phase 06 — Closed Beta & Stabilization
+
+| | |
+|---|---|
+| **Objectives** | Validate with 3–10 friends, fix the issues found, and stabilize. |
+| **Scope** | PLAT-05 diagnostics export, a beta onboarding note, a feedback channel, bug fixes, and P1 items reprioritized from feedback. No new P2 features. |
+| **Deliverables** | Beta deployment with a standard `next build` on Vercel or a Node host (D1), a "How to report a bug" page in About, the triage process (P0/P1/P2 bug labels), and the release notes. |
+| **Dependencies** | Phases 03 and 05. A public display name is optional: the neutral placeholder is acceptable for the beta (D5), but "Metrolist Web Reimagined" must never be used. |
+| **Entry gate** | All P0 features are done. Zero open P0 bugs. Every P0 UX-AC passes. The owner has used it for 14 days without data loss. |
+| **Acceptance criteria** | Every beta-reported crash or data-loss bug is either fixed or has a documented workaround. The manual beta checklist ([testing/test-plan.md §8](testing/test-plan.md#8-manual-beta-checklist)) is run on each tester's browser and device combination. |
+| **Definition of Done** | Two consecutive weeks with no new P0 or P1 bugs. A decision is recorded on what follows: P2 (compliant provider, sync and backend, Android). |
+| **Risks** | Testers expect streaming of a mainstream catalog. *Mitigation:* explain the scope clearly at onboarding. Device diversity. *Mitigation:* the diagnostics export. |
+
+---
+
+## Priority matrix by phase
+
+| Priority | Ph 01 | Ph 02 | Ph 03 | Ph 04 | Ph 05 | Ph 06 |
+|---|---|---|---|---|---|---|
+| **P0** | SHELL-01/02/05, SET-01/02, PLAT-02 | SRC-01, HOME-01/02/04–07 (mock), EXP-01–08, LIB-01–08, SET-05 | SRC-02/03, LIB-09/10, NP-01–10/12/13, SHELL-04, SET-03/04/07, PLAT-01/06, HOME-03 | HOME-05–07 (history rules) | — | Fixes |
+| **P1** | — | — | — | HOME-08/09, EXP-09 | NP-11/14/15, SHELL-03, LIB-11/12, SET-06, PLAT-03/04, SHELL-04 help | PLAT-05, items reprioritized from feedback |
+| **P2** | — | — | — | — | — | Not scheduled: SRC-04, EXP-10, LIB-13, NP-16/17, sync, Android |
+
+## Proposed Spec Kit feature breakdown (for the next phase)
+
+These are names only, not specs. Specs will be created later with `/speckit-specify`, one per feature, in this order:
+
+1. `001-app-shell-and-design-tokens` (Phase 01)
+2. `002-mock-catalog-and-provider-registry` (Phase 02)
+3. `003-explore-search-and-browse` (Phase 02)
+4. `004-library-and-playlists` (Phase 02)
+5. `005-home-sections-mock` (Phase 02)
+6. `006-playback-engine-and-queue` (Phase 03)
+7. `007-now-playing-ui` (Phase 03)
+8. `008-local-files-storage-and-sample-audio` (Phase 03; includes quota handling and storage management)
+9. `009-backup-export-import` (Phase 03)
+10. `010-history-based-recommendations` (Phase 04)
+11. `011-pwa-and-offline-shell` (Phase 05)
+12. `012-lyrics-and-polish` (Phase 05)
+13. `013-beta-diagnostics` (Phase 06)
+
+Before `001`, run `/speckit-constitution`. Its principles are drawn from the engineering principles in the master brief, plus [architecture.md §3](architecture.md#3-layers-and-dependency-rules) and [product-requirements.md §6](product-requirements.md#6-music-source-policy).
