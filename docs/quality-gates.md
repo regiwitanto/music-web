@@ -145,7 +145,7 @@ Evidence for finding 2: before the fix, the first two new tests failed 6 of 6 (C
 
 #### 001 G13 acceptance record (draft, awaiting owner approval)
 
-**Status: draft. G13 is not approved.** Prepared 2026-11-06 from the owner's statements of that date. Nothing here records a test the owner or agent did not perform.
+**Status: ready for the owner's decision. G13 is not approved.** All other blockers are resolved, waived or deferred as recorded below. Prepared 2026-11-06 from the owner's statements of that date. Nothing here records a test the owner or agent did not perform.
 
 **Gate summary**
 
@@ -153,18 +153,18 @@ Evidence for finding 2: before the fix, the first two new tests failed 6 of 6 (C
 |---|---|---|
 | G1–G4 | Passed | Owner approvals 2026-11-05 |
 | G5–G8 | Passed | Local runs 2026-11-06 (typecheck, lint, 349 unit tests, store and repository suites) |
-| G9 E2E | Partial, with owner-accepted residual risks | Last full run 465/0/159 (624 tests). Owner decisions below |
+| G9 E2E | Partial, with owner-accepted residual risks (gaps 1, 2, 3, 5) and gap 6 mitigated locally | Last full run 465/0/159 (624 tests). Owner decisions below |
 | G10 Accessibility | Automated: Passed · Manual SR pass: **Deferred** | Automated axe, keyboard and focus tests pass; manual screen-reader pass (T106) not performed, deferred by the owner 2026-11-06 to the Phase 06 beta deployment |
 | G11 Visual review | Passed 2026-11-06 | Owner sign-off (general, not itemised) |
 | G12 Regression | N/A | First feature |
-| CI | **Not run: blocks G13 until waived** | No remote. Waiver drafted below, not approved |
+| CI | **Not run; waived** by the owner 2026-11-06 | No remote. Waiver below, with conditions |
 
 **Owner decisions on G9 gaps (2026-11-06)**
 - **Gap 3 (WebKit toggle tooltip, 174/175):** **accepted by the owner as a documented residual risk**, not as a fully verified fix.
 - **Gap 5 (800 px nav-tooltip flake on WebKit, ~1 in 780 before hardening; 500/500 after):** **accepted by the owner as a documented residual risk**, not as a fully verified fix. Traces stay on for failed WebKit tests.
 - **Gap 6 (timeouts under parallel load):** **locally mitigated** by `workers: 2` (three clean full runs at 2 workers, then 465/0/159 after round 4). **CI verification remains outstanding.**
-- **Gap 1 (V12 does not sample screenshot pixels):** **not covered by the manual review as recorded.** The owner's confirmation does not state that first paint was observed on a cold or slowed load in each theme, which is what pixel sampling would show. V12's automated checks (body background, `<html>` attributes, active item colour on 10 cold loads per theme with JS held) still apply. Open: the owner either confirms such a check or accepts gap 1 as a residual risk.
-- **Gap 2 (200% zoom emulated):** covered only if the owner's visual review included a real 200% zoom check; the confirmation does not say. Same choice as gap 1.
+- **Gap 1 (V12 does not sample screenshot pixels):** **accepted by the owner, 2026-11-06, as a documented residual risk.** Not covered by the manual review: no cold-load or slowed first-paint check was confirmed. V12's automated checks (body background, `<html>` attributes, active item colour on 10 cold loads per theme with JS held) still apply.
+- **Gap 2 (200% zoom emulated):** **accepted by the owner, 2026-11-06, as a documented residual risk.** A real 200% browser-zoom check was not confirmed; V24 emulates it with a 640 px viewport.
 
 **Deferred items** (owner, 2026-11-06; see the [register](#deferral-of-manual-verifications))
 - **T106, manual screen-reader pass:** Deferred, not Passed. Due before the Phase 06 closed-beta deployment. Residual risks while deferred:
@@ -183,14 +183,12 @@ Evidence for finding 2: before the fix, the first two new tests failed 6 of 6 (C
 4. Results for each: every page title announced exactly **once** after navigation (D-001-3); focus lands on the page `h1`; landmarks are one navigation, one main and "Player" on desktop.
 5. Any deviation, with the page and AT where it occurred.
 
-**Proposed CI waiver (draft; not approved)**
+**CI waiver (approved by the owner, 2026-11-06)**
 
 > **Waiver: CI run for 001-app-shell.** The repository has no remote, so `.github/workflows/ci.yml` cannot run. For G13 of 001 only, local runs stand in for CI: on 2026-11-06, `pnpm typecheck` and `pnpm lint` exit 0; `pnpm test` 349/349; full `pnpm test:e2e` (all six projects, `workers: 2`, test-hooks build) 465 passed, 0 failed, 159 skipped; normal `pnpm build` and `pnpm scan:branding` exit 0. **Conditions:** (1) the waiver ends when a remote is added; (2) the first CI run is then recorded against the 001 gates in this file; (3) G9 gap 6 closes only after a green CI run, and a CI failure in a 001 test reopens it; (4) the Global Definition of Done's "and in CI" clause applies in full from feature 002 onward, unless the owner waives it again. **Risk accepted:** CI hosts differ from this machine (fewer cores, clean environment), so a CI-only failure is possible.
 >
-> Approved by: ________ (owner) · Date: ________
+> Approved by: the owner · Date: 2026-11-06
 
 **Remaining blockers to G13**
-1. **CI:** the owner approves the waiver above, or CI runs once.
-2. **Gaps 1 and 2:** the owner confirms the manual checks or accepts them as residual risks.
-3. **G13 itself:** the owner's explicit approval, dated, recorded in this file and in the spec's Status line.
+1. **G13 itself:** the owner's explicit approval, dated, recorded in this file and in the spec's Status line.
 
