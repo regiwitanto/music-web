@@ -4,7 +4,7 @@
 
 **Input**: Feature specification from `specs/001-app-shell/spec.md` (approved 2026-11-05, G1 and G2 passed)
 
-**Status**: **Implemented 2026-11-06** (T001–T105 and T108 done). Automated gates G5–G8 pass; G9 (E2E) and G10 (accessibility) are **Partial**, with the open gaps recorded in [docs/quality-gates.md](../../docs/quality-gates.md); T106 (manual screen-reader pass) and T107 (visual review) are pending the owner; the feature is not yet accepted (G13). Plan approved 2026-11-05 (Gate G3); tasks approved 2026-11-05 (Gate G4, 108 tasks).
+**Status**: **Implemented 2026-11-06** (T001–T105, T107 and T108 done). Automated gates G5–G8 pass; G9 (E2E) is **Partial** with owner-accepted residual risks, and G10 (accessibility) is **Partial**, see [docs/quality-gates.md](../../docs/quality-gates.md); G11 visual review passed on the owner's confirmation (2026-11-06); T106 (manual screen-reader pass) is pending the owner; the feature is not yet accepted (G13). Plan approved 2026-11-05 (Gate G3); tasks approved 2026-11-05 (Gate G4, 108 tasks).
 
 **Owner review, 2026-11-05 (pre-G3).**
 - **Approved:** the overall architecture, the seven additional dependencies, the routing strategy and the neutral favicon.
