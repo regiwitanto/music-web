@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-05
 
-**Status**: Approved (owner, 2026-11-05)
+**Status**: Approved (owner, 2026-11-05) · **Accepted (G13, owner, 2026-11-06)** with the exceptions in [docs/quality-gates.md](../../docs/quality-gates.md#001-g13-acceptance-record); the manual screen-reader pass (T106) is Deferred to Phase 06
 
 **Input**: User description: "App shell with desktop sidebar navigation, mobile bottom navigation, exactly four navigation destinations (Home, Explore, Library, Settings), responsive layout, theme foundations, a global mini-player dock placeholder, loading and empty states, accessibility requirements, keyboard navigation, route preservation, and testable acceptance criteria."
 
