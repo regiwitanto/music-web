@@ -7,7 +7,7 @@ description: "Task list for 001-app-shell (App Shell & Navigation)"
 
 **Input**: Design documents from `specs/001-app-shell/`: [spec.md](spec.md) (approved), [plan.md](plan.md) (approved, G3), [research.md](research.md) (R1–R15), [data-model.md](data-model.md), [contracts/](contracts/) (`ui-shell.md`, `routes.md`, `theme.md`, `modules.md`), [quickstart.md](quickstart.md) (V1–V25)
 
-**Status**: **Approved by the owner, 2026-11-05 (Gate G4 passed).** All 108 tasks are in scope. No task has been started, and no application code has been written. Next stage: `/speckit-analyze`, which must report no CRITICAL findings, and then owner approval to start implementation.
+**Status**: **Approved by the owner, 2026-11-05 (Gate G4 passed).** All 108 tasks are in scope. **Progress (2026-11-06): 106 of 108 tasks are done.** The two open tasks are T106 (manual screen-reader pass) and T107 (visual review), both pending manual verification by the owner. The feature is not yet accepted (G13); gate status and the open gaps are in [docs/quality-gates.md](../../docs/quality-gates.md).
 
 **Tests**: These are **required**, not optional. The constitution (X) requires automated tests of critical behaviour, the spec gives measurable success criteria SC-001 to SC-010, and the plan (R14) fixes the test strategy. Within each story the tests are written first and must **fail** before the implementation tasks start.
 
