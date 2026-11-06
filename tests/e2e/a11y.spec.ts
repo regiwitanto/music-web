@@ -183,12 +183,10 @@ test.describe('target sizes and names (V9)', () => {
     await expect(page.getByRole('tooltip', { name: 'Collapse sidebar' })).toBeVisible()
   })
 
-  test('the collapse toggle keeps its tooltip after toggling, in both states', async ({ page, browserName }) => {
-    // KNOWN DEFECT (docs/quality-gates.md, G9 gap 3; FR-031): in WebKit, once the toggle has
-    // been clicked its tooltip often fails to open again, by hover or by keyboard focus
-    // (diagnostic 2026-11-06: 1/8 to 4/8 passes after a click vs 8/8 before any click).
-    // Cause not found. Reported as skipped, not passed, until it is fixed.
-    test.fixme(browserName === 'webkit', 'WebKit: toggle tooltip often fails to open after the toggle was clicked; cause not found')
+  test('the collapse toggle keeps its tooltip after toggling, in both states', async ({ page }) => {
+    // Regression test for G9 gap 3 (fixed 2026-11-06): the click replaces the hovered icon,
+    // and WebKit then often sent no pointerleave, so the tooltip stopped opening by hover
+    // and by focus. Runs on every desktop engine, WebKit included.
     // Collapsed: "Expand sidebar". The same hover approach as the nav items (pointer away, then hover).
     const expand = await openCollapsedSidebar(page)
     await expand.hover()
@@ -199,6 +197,13 @@ test.describe('target sizes and names (V9)', () => {
     await expect(collapse).toBeVisible()
     await movePointerAway(page)
     await collapse.hover()
+    await expect(page.getByRole('tooltip', { name: 'Collapse sidebar' })).toBeVisible()
+    // Keyboard: after the clicks, moving focus away and back still shows the tooltip.
+    await movePointerAway(page)
+    await page.keyboard.press('Shift+Tab')
+    await expect(page.getByRole('tooltip', { name: 'Collapse sidebar' })).toHaveCount(0)
+    await page.keyboard.press('Tab')
+    await expect(collapse).toBeFocused()
     await expect(page.getByRole('tooltip', { name: 'Collapse sidebar' })).toBeVisible()
   })
 })

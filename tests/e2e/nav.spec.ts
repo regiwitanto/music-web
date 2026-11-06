@@ -81,6 +81,10 @@ test.describe('sidebar forms (V1, V2)', () => {
     expect((await sidebar.boundingBox())?.width).toBe(72)
     expect(await isVisuallyHidden(sidebar.getByText('Explore', { exact: true }))).toBe(true)
 
+    // The toggle's own tooltip may be open while the pointer rests on it after the click.
+    // Leave it first, as a real pointer would: a one-step jump straight to another trigger
+    // lands inside Radix's grace area for the open tooltip, which keeps that one open.
+    await movePointerAway(page)
     await sidebar.getByRole('link', { name: 'Explore' }).hover()
     await expect(page.getByRole('tooltip')).toHaveText('Explore')
 

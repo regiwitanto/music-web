@@ -72,10 +72,14 @@ export function Sidebar({ collapsed, onToggle }: SidebarProps) {
               collapsed ? 'self-center' : 'self-start',
             )}
           >
+            {/* pointer-events-none keeps the button itself as the pointer target. The click
+                swaps these icons; if the hovered node is the icon, WebKit loses track of the
+                pointer when it is removed and never sends pointerleave, so the tooltip stops
+                opening (diagnostic 2026-11-06; docs/quality-gates.md G9 gap 3). */}
             {collapsed ? (
-              <PanelLeftOpen aria-hidden="true" className="size-5" strokeWidth={1.75} />
+              <PanelLeftOpen aria-hidden="true" className="pointer-events-none size-5" strokeWidth={1.75} />
             ) : (
-              <PanelLeftClose aria-hidden="true" className="size-5" strokeWidth={1.75} />
+              <PanelLeftClose aria-hidden="true" className="pointer-events-none size-5" strokeWidth={1.75} />
             )}
           </button>
         </TooltipTrigger>
