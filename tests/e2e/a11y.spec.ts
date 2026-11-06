@@ -258,6 +258,40 @@ test.describe('crossing a breakpoint (V23)', () => {
     await expect(page.getByTestId('sidebar').locator('a[aria-current="page"]')).not.toBeFocused()
     expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true)
   })
+
+  test('the collapse toggle losing focus below 1024 px hands it to the active sidebar item', async ({ page }) => {
+    // The toggle exists only at 1024 px and above; the sidebar itself stays down to 768 px.
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/library/liked')
+    await waitForHydration(page)
+    await page.getByRole('button', { name: 'Collapse sidebar' }).focus()
+    await page.setViewportSize({ width: 900, height: 900 })
+    await expect(page.getByTestId('sidebar').locator('a[aria-current="page"]')).toBeFocused()
+  })
+
+  test('a hand-off at 1024 px is not repeated later from a stale record', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/library/liked')
+    await waitForHydration(page)
+    await page.getByRole('button', { name: 'Collapse sidebar' }).focus()
+    await page.setViewportSize({ width: 900, height: 900 })
+    await expect(page.getByTestId('sidebar').locator('a[aria-current="page"]')).toBeFocused()
+    // The user moves focus away; a later move to the bottom nav must leave it there.
+    await page.evaluate(() => (document.activeElement as HTMLElement).blur())
+    await page.setViewportSize({ width: 390, height: 844 })
+    await expect(page.getByTestId('bottom-nav').locator('a[aria-current="page"]')).not.toBeFocused()
+    expect(await page.evaluate(() => document.activeElement === document.body)).toBe(true)
+  })
+
+  test('focus on a sidebar link is untouched when only the toggle goes away', async ({ page }) => {
+    await page.setViewportSize({ width: 1440, height: 900 })
+    await page.goto('/library/liked')
+    await waitForHydration(page)
+    const explore = page.getByTestId('sidebar').getByRole('link', { name: 'Explore' })
+    await explore.focus()
+    await page.setViewportSize({ width: 900, height: 900 })
+    await expect(explore).toBeFocused()
+  })
 })
 
 test.describe('reflow (V24)', () => {
