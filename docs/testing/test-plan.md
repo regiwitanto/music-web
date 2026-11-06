@@ -27,6 +27,8 @@
 
 Planned scripts (created in Phase 01): `pnpm test` (Vitest), `pnpm test:e2e` (Playwright), `pnpm typecheck`, `pnpm lint`.
 
+Playwright keeps a full trace for every failed test (`trace: 'retain-on-failure'` in `playwright.config.ts`, added 2026-11-06), so a rare flake can be diagnosed from its first occurrence. Locally the trace stays in `test-results/` only until the next run, so copy it out before re-running; open it with `pnpm exec playwright show-trace <trace.zip>`. In CI the uploaded HTML report embeds it.
+
 ## 3. Key suites
 
 ### 3.1 Queue (domain): UX-AC-16

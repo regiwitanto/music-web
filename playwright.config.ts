@@ -13,6 +13,11 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   use: {
     baseURL: `http://localhost:${PORT}`,
+    // Keep a full trace (DOM snapshots, events, console) for every failed test, so a rare
+    // flake can be diagnosed from its first occurrence (docs/quality-gates.md, 001 G9 gap 5).
+    // Passing tests keep nothing. Locally the trace is in test-results/ until the next run;
+    // the HTML report (uploaded by CI) embeds it.
+    trace: 'retain-on-failure',
   },
   webServer: {
     command: `pnpm start --port ${PORT}`,
