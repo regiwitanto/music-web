@@ -13,10 +13,10 @@ export default defineConfig({
   forbidOnly: !!process.env.CI,
   use: {
     baseURL: `http://localhost:${PORT}`,
-    // Keep a full trace (DOM snapshots, events, console) for every failed test, so a rare
-    // flake can be diagnosed from its first occurrence (docs/quality-gates.md, 001 G9 gap 5).
-    // Passing tests keep nothing. Locally the trace is in test-results/ until the next run;
-    // the HTML report (uploaded by CI) embeds it.
+    // Keep a trace (actions, DOM snapshots, screencast, console, network; not DOM events or
+    // React state) for every failed test, so a rare flake can be inspected from its first
+    // occurrence (docs/quality-gates.md, 001 G9 gap 5). Passing tests keep nothing. The HTML
+    // report embeds it (copy in test-results/); the next run wipes both (test-plan §2).
     trace: 'retain-on-failure',
   },
   webServer: {

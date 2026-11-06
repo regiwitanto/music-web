@@ -153,10 +153,22 @@ export async function isVisuallyHidden(locator: import('@playwright/test').Locat
   return box === null || (box.width <= 1 && box.height <= 1)
 }
 
-/** Moves the pointer to the page's top-right corner, away from every tooltip trigger. */
+/**
+ * Moves the pointer to the page's top-right corner, away from every tooltip trigger.
+ *
+ * After the pointer leaves an open tooltip's trigger, Radix stores a grace area in React
+ * state and only attaches the `pointermove` listener that closes the tooltip in an effect
+ * after the next render. If every move lands before that render, nothing closes it. So:
+ * wait for two animation frames, then move once more (docs/quality-gates.md, 001 G9 gap 5).
+ */
 export async function movePointerAway(page: Page): Promise<void> {
   const size = page.viewportSize()
-  await page.mouse.move((size?.width ?? 800) - 2, 2, { steps: 4 })
+  const x = (size?.width ?? 800) - 2
+  await page.mouse.move(x, 2, { steps: 4 })
+  await page.evaluate(
+    () => new Promise<void>((resolve) => requestAnimationFrame(() => requestAnimationFrame(() => resolve()))),
+  )
+  await page.mouse.move(x - 1, 3)
 }
 
 /** Loads `/` on a desktop project, collapses the sidebar and returns the "Expand sidebar" toggle. */

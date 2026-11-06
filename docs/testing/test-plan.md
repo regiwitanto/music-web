@@ -1,6 +1,6 @@
 # Test Plan
 
-> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-06 (§2 trace retention)
 > **Owns:** test strategy, tooling, test levels, the provider contract suite, traceability from criteria to tests, the browser audio matrix, accessibility and performance methods, and the manual beta checklist.
 > **Related:** criteria in [ux-specification.md §9](../ux-specification.md#9-measurable-ux-acceptance-criteria) · features in [product-requirements.md §5](../product-requirements.md#5-features-and-priorities) · architecture seams in [architecture.md](../architecture.md)
 
@@ -27,7 +27,7 @@
 
 Planned scripts (created in Phase 01): `pnpm test` (Vitest), `pnpm test:e2e` (Playwright), `pnpm typecheck`, `pnpm lint`.
 
-Playwright keeps a full trace for every failed test (`trace: 'retain-on-failure'` in `playwright.config.ts`, added 2026-11-06), so a rare flake can be diagnosed from its first occurrence. Locally the trace stays in `test-results/` only until the next run, so copy it out before re-running; open it with `pnpm exec playwright show-trace <trace.zip>`. In CI the uploaded HTML report embeds it.
+Playwright keeps a trace for every failed test (`trace: 'retain-on-failure'` in `playwright.config.ts`, added 2026-11-06), so a rare flake can be inspected from its first occurrence. A trace holds the Playwright actions, a DOM snapshot around each action, screencast frames, console output and network requests. It does **not** record DOM events or listeners, or React state. Where to find it: the HTML report (`pnpm exec playwright show-report`) embeds it, and a copy is in `test-results/`. **Both folders are wiped by the next run**, so copy `playwright-report/` (or the `trace.zip`) out before re-running; a standalone zip opens with `pnpm exec playwright show-trace <trace.zip>`. In CI the uploaded HTML report keeps it.
 
 ## 3. Key suites
 

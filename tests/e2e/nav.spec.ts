@@ -1,4 +1,4 @@
-import { expect, isVisuallyHidden, movePointerAway, noHorizontalScroll, test } from './fixtures'
+import { expect, isVisuallyHidden, movePointerAway, noHorizontalScroll, test, waitForHydration } from './fixtures'
 
 /*
  * Story 1 — reach any destination from anywhere (quickstart V1, V2; SC-001; FR-001–008, FR-014, FR-031).
@@ -61,6 +61,8 @@ test.describe('sidebar forms (V1, V2)', () => {
   test('800 px: hovering an icon-only item shows its tooltip (Story 1 scenario 3)', async ({ page }) => {
     await page.setViewportSize({ width: 800, height: 900 })
     await page.goto('/')
+    // Tooltips only work once React has hydrated; hovering earlier races it (G9 gap 5).
+    await waitForHydration(page)
     for (const item of ITEMS) {
       // Playwright jumps the pointer in one step; move away first so the previous
       // tooltip's hover grace area cannot keep it open.
@@ -73,6 +75,7 @@ test.describe('sidebar forms (V1, V2)', () => {
 
   test('1440 px: collapsing switches 240 ↔ 72 px and keeps every item one click away', async ({ page }) => {
     await page.goto('/')
+    await waitForHydration(page)
     const sidebar = page.getByTestId('sidebar')
     expect((await sidebar.boundingBox())?.width).toBe(240)
     expect(await isVisuallyHidden(sidebar.getByText('Explore', { exact: true }))).toBe(false)
