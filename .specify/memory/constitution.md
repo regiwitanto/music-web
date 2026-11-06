@@ -1,15 +1,3 @@
-<!--
-Sync Impact Report
-- Version change: (unratified template) → 1.0.0
-- Modified principles: all template placeholders replaced (5 placeholder slots → 15 principles)
-- Added sections: Core Principles I–XV; Platform & Source Constraints;
-  Development Workflow & Quality Gates; Governance
-- Removed sections: none
-- Templates requiring updates: none — plan-template.md's "Constitution Check" reads this file
-  at runtime; spec/tasks/checklist templates are unaffected ✅
-- Deferred TODOs: none
--->
-
 # Metrolist Web Reimagined Constitution
 
 "Metrolist Web Reimagined" is an internal working title. It MUST NOT appear in any public-facing
@@ -197,6 +185,12 @@ show the alternative.
   Complexity Tracking table or the plan is revised.
 - A gate is passed only with recorded evidence. The gate definitions are in
   `docs/quality-gates.md`. The Definition of Done is in `docs/roadmap.md`.
+- A required **manual** verification (for example a screen-reader pass) MAY be deferred, but
+  only by the owner, in writing, and only when the automated checks for the same behaviour pass.
+  A deferral is recorded as **Deferred**, never as Passed. It names the reason, the residual risks,
+  and the stage by which the verification MUST be done; that stage cannot be passed while the
+  verification is outstanding. Deferral never relaxes a requirement. Automated tests,
+  accessibility scans, keyboard and focus checks cannot be deferred.
 
 ## Governance
 
@@ -211,4 +205,4 @@ show the alternative.
   - PATCH: wording and clarifications.
 - Compliance is checked at every plan (Constitution Check), at `/speckit-analyze`, and at review.
 
-**Version**: 1.0.0 | **Ratified**: 2026-11-05 | **Last Amended**: 2026-11-05
+**Version**: 1.1.0 | **Ratified**: 2026-11-05 | **Last Amended**: 2026-11-06

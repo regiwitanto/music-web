@@ -64,6 +64,8 @@ Expected: every command exits with code 0. The Playwright HTML report is in `pla
    - Confirm the landmarks list shows one navigation, one main and the "Player" region (desktop).
 
    Record the date, the assistive technology and the browser versions (SC-009).
+
+   *For 001 this pass is Deferred by the owner (2026-11-06) to Phase 06 closed-beta preparation, and will use VoiceOver on macOS and iOS plus NVDA or TalkBack; see the deferral register in `docs/quality-gates.md`.*
 2. **Visual review** by the owner at 320, 375, 768, 1024 and 1440 px in each theme and in two accents (G11).
 
 ## 5. Lint-rule proof

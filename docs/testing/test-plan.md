@@ -170,7 +170,7 @@ Codec rows feed the import-time `canPlayType` check. The app relies on that runt
 
 **Accessibility**
 - axe runs on every route and in every theme in E2E (E2E-09); serious and critical violations fail the build.
-- Before each phase gate, a manual screen-reader pass: VoiceOver on macOS and iOS, and NVDA on Windows if one is available, otherwise TalkBack. It covers the nav, search, a playlist, the player, the queue and the dialogs.
+- Before each phase gate, a manual screen-reader pass: VoiceOver on macOS and iOS, and NVDA on Windows if one is available, otherwise TalkBack. It covers the nav, search, a playlist, the player, the queue and the dialogs. The owner may defer it under [quality-gates §1](../quality-gates.md#deferral-of-manual-verifications) "Deferral of manual verifications"; a deferred pass is done before the stage named in the register (001: before the Phase 06 beta deployment, deferred 2026-11-06; later phase gates are unaffected unless the owner defers them separately). The axe scans and the keyboard and focus tests are never deferred.
 - A focus-order check at 200% zoom.
 
 **Performance (UX-AC-21)**

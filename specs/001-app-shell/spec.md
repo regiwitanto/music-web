@@ -277,6 +277,7 @@ Before their features are built, each destination shows a clear placeholder: a h
 - **SC-007**: Across 10 consecutive navigations covering all four destinations and two reserved nested addresses, the navigation and the player dock are created exactly once. They are never re-created.
 - **SC-008**: Browser Back, Forward and Refresh on any destination or reserved nested address always show the matching page and active item (100% of tested addresses). Every reserved pattern in FR-012 shows "Nothing here yet" under the correct destination. Each unknown-address example in Story 2, scenario 8 shows Not Found (100% of cases).
 - **SC-009**: After every navigation, focus is on the new page's main heading, and its title is announced exactly once to screen-reader users (verified in a manual pass with at least one desktop and one mobile screen reader).
+  *Verification status (2026-11-06):* the manual pass is **Deferred** by the owner to Phase 06 closed-beta preparation (docs/quality-gates.md, deferral register); it will use the stricter G10 set (VoiceOver on macOS and iOS, plus NVDA or TalkBack). The criterion itself is unchanged. Focus on the `h1` after navigation is covered by automated tests; the single announcement is not.
 - **SC-010**: A simulated page failure leaves navigation usable, and Retry recovers the page without a full reload.
 
 ## Assumptions
