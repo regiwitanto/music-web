@@ -25,6 +25,16 @@ export default defineConfig({
         },
       },
       {
+        // Repositories, lifecycle and migrations under fake-indexeddb (002 plan R9).
+        extends: true,
+        test: {
+          name: 'integration',
+          environment: 'node',
+          include: ['tests/integration/**/*.test.ts'],
+          setupFiles: ['fake-indexeddb/auto'],
+        },
+      },
+      {
         extends: true,
         test: {
           name: 'dom',

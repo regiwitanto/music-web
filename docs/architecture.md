@@ -33,7 +33,7 @@ Everything happens in the browser. There is no backend. The browser layer has th
 | Lucide React | **Keep** | Import each icon by name so unused icons are not bundled. |
 | Motion | **Keep, used narrowly** | Only for the expanded-player transition, the mobile sheet drag and list reorder animation. Use CSS transitions everywhere else. Honour `prefers-reduced-motion`. |
 | Zustand | **Keep** (v5) | Holds player, queue, UI and settings state. Not used for library data (see ADR-004). |
-| IndexedDB + Dexie | **Keep** (v4) + `dexie-react-hooks` | `useLiveQuery` re-renders reactively from the database. |
+| IndexedDB + Dexie | **Keep** (v4; `dexie` 4.4.7 pinned by feature 002). `dexie-react-hooks` is **not adopted in 002** ([002 research R3](../specs/002-local-persistence/research.md)); revisit if a view needs it | Dexie's `liveQuery` backs the repository `watch` ports and reaches other tabs. Library reads go through those ports, not `useLiveQuery` in components (ADR-004, amended with 002). |
 | HTMLAudioElement adapter | **Keep** | One element for the whole app, created outside React. |
 | Media Session API | **Keep** | Detect support before use (§10). |
 | Vitest + React Testing Library | **Keep** (+ `jsdom`) | jsdom has no media playback, so the engine sits behind an interface and tests use `FakeAudioEngine`. |
@@ -46,7 +46,7 @@ Everything happens in the browser. There is no backend. The browser layer has th
 |---|---|---|
 | `music-metadata` | Reads ID3/Vorbis/MP4 tags and embedded artwork from local files (LIB-10). Lazy-loaded only when importing. | Writing our own tag parsers is error-prone. |
 | `@dnd-kit/core` + `@dnd-kit/sortable` | Accessible drag reorder with keyboard sensors (LIB-09, NP-09). | Native HTML5 drag-and-drop does not work on touch or with a keyboard. |
-| `zod` | Validates backup import files and provider responses (SET-04). | Hand-written validation duplicates the types. |
+| `zod` | Validates backup import files, provider responses and stored records on read (SET-04, 002; 4.6.7 pinned by feature 002). | Hand-written validation duplicates the types. |
 | `fake-indexeddb` (dev only) | Lets Dexie repositories be tested under Vitest. | — |
 | `@axe-core/playwright` (dev only) | Automated accessibility checks. | — |
 | `clsx`, `tailwind-merge`, `class-variance-authority` | Mandatory helpers of the approved shadcn/ui components: `cn()` merges class names and resolves Tailwind conflicts, and `cva` defines Button variants. Approved by the owner 2026-11-05 (001 plan). | Hand-written class merging would diverge from the generated components. |
@@ -72,6 +72,8 @@ Recorded 2026-11-05 as part of the 001 plan amendment (analysis finding K1). It 
 | Lucide icons (`lucide-react`) | Icon path data bundled into client JavaScript | ISC, with portions under MIT (derived from Feather) | Include the copyright and permission notices in distributions | `THIRD_PARTY_NOTICES.md` |
 | Geist font files via `next/font` | Font files self-hosted in the build output | SIL Open Font License 1.1 | Distribute the copyright and license with the fonts; do not sell the fonts on their own; do not use the reserved font name for modified versions | `THIRD_PARTY_NOTICES.md` carries the OFL text. The fonts are used unmodified |
 | Runtime libraries minified into the client bundle: `react`, `react-dom`, `next`, `zustand`, `radix-ui`, `clsx`, `tailwind-merge` | npm dependencies | MIT | Keep the copyright and permission notice | `THIRD_PARTY_NOTICES.md` |
+| `dexie` | npm dependency (`dexie` 4.4.7, feature 002), minified into the client bundle | Apache-2.0 | Provide a copy of the license, and the package's `NOTICE` file if it has one | `THIRD_PARTY_NOTICES.md` (added by 002) |
+| `zod` | npm dependency (`zod` 4.6.7, feature 002), minified into the client bundle (the row schemas run in the browser) | MIT | Keep the copyright and permission notice | `THIRD_PARTY_NOTICES.md` (added by 002) |
 | `class-variance-authority` | npm dependency, minified into the client bundle | Apache-2.0 | Provide a copy of the license, and the package's `NOTICE` file if it has one | `THIRD_PARTY_NOTICES.md` |
 | Transitive packages bundled with the above: `scheduler`, the `@radix-ui/*` primitives used by Tooltip and Slot, `@floating-ui/*` (MIT); `@swc/helpers` (Apache-2.0); `tslib` (0BSD) | Pulled in by `react-dom`, `radix-ui` and `next`, and minified into the client bundle | MIT, Apache-2.0, 0BSD | MIT and Apache-2.0 as above; 0BSD has no attribution requirement (included anyway) | `THIRD_PARTY_NOTICES.md`. Added 2026-11-05 during 001 T001, after checking the installed dependency tree |
 | Development and test tools (`vitest`, `jsdom`, Testing Library, `@playwright/test`, `@axe-core/playwright`, ESLint, TypeScript) | Not shipped | Various, including MPL-2.0 for `axe-core` | None for distribution, because none of their code is in the build output | — |
@@ -119,7 +121,8 @@ src/
     container.ts                # wires up infrastructure (the only file that may import it)
     ports.ts                    # repository and platform interfaces implemented by infrastructure
     shell.ts                    # runtime facade: domain values that presentation may use
-    stores/                     # player.ts, ui.ts, settings.ts
+    stores/                     # player.ts, ui.ts, settings.ts, storage-status.ts
+    storage-lifecycle.ts        # opens the device store and maps its events to the status (002)
     playback/PlaybackController.ts
     use-cases/                  # library.ts, playlists.ts, import-local.ts, backup.ts, history.ts
   domain/
@@ -129,7 +132,8 @@ src/
   infrastructure/
     audio/HtmlAudioEngine.ts  audio/FakeAudioEngine.ts
     media-session/MediaSessionAdapter.ts
-    db/schema.ts  db/repositories/*.ts
+    persistence/                # database.ts (schema v1), schemas.ts (zod), errors.ts, migrations.ts, dexie-storage.ts,
+                                # memory-storage.ts (session fallback), resilient-storage.ts, diagnostics-log.ts (002)
     providers/{mock,local,sample}/  providers/registry.ts
     platform/capabilities.ts
   test/fixtures/  test/fakes/   # test data and in-memory fakes (never imported by app code)
@@ -251,7 +255,8 @@ These are pure functions in `domain/recommendations/`. The inputs are play event
 | `usePlayerStore` (Zustand) | `queue`, `playback`, the command methods | Snapshot to Dexie `playerSnapshot` (debounced 1 s, and on `pagehide`) |
 | `useUiStore` (Zustand) | `nowPlayingOpen`, `queuePanelOpen`, toasts, active dialog | None |
 | `useSettingsStore` (Zustand) | Playback preferences; the reduced-motion override (SET-06) | Dexie `settings`. There is no theme or accent setting and no `localStorage` mirror (O8, ADR-011) |
-| Library data | Playlists, likes, library items, tracks, recent searches | **Dexie, read with `useLiveQuery`**, not copied into Zustand (ADR-004) |
+| `useStorageStatusStore` (Zustand) | `phase` (`opening`, `ready`, `unavailable`) and the banner `notice` (002) | None. Written only by `storage-lifecycle.ts` |
+| Library data | Playlists, likes, library items, tracks, recent searches | Read through repository **`watch` ports** (Dexie `liveQuery`, or memory in fallback), not copied into Zustand (ADR-004, amended with 002) |
 
 - Components select narrow slices, for example `usePlayerStore(s => s.playback.status)`.
 - `positionMs` changes about 4 times a second. Only the seek bar and the time labels subscribe to it.
@@ -361,7 +366,16 @@ The Media Session adapter does the following:
 - Skeletons are driven by explicit `AsyncViewState` updates, not by React Suspense fallbacks. React 19 holds back the reveal of suspended content until about 300 ms after its fallback appeared, so a Suspense fallback carrying a 150 ms delayed skeleton would become visible even for loads under 150 ms (001 research R9). A feature that wants to use Suspense for a skeleton must first show, with a measurement recorded in its plan, that this limit is still met.
 - Copy and layouts are in [ux-specification.md §7](ux-specification.md#7-loading-empty-and-error-states).
 
-**Storage unavailable:** if IndexedDB cannot be opened (some private modes), the app runs in memory and shows a banner saying data will not be saved.
+**Storage unavailable (feature 002):** if the device store cannot be opened, is lost during a session, is held open by another version, or holds data from a newer version, the app runs in memory for the session and shows a persistent banner (in flow, `role="status"`, never focused) with one of four fixed texts: [002 contracts/storage-status.md §2](../specs/002-local-persistence/contracts/storage-status.md#2-banner-text-fixed-copy) and [ux-specification.md §7](ux-specification.md#7-loading-empty-and-error-states). The switch to memory happens at most once per session.
+
+How errors are reported (`infrastructure/persistence/errors.ts`; 002 research R7):
+
+| Raised by Dexie or the browser | Reported as |
+|---|---|
+| `QuotaExceededError` | `StorageError` `QUOTA_EXCEEDED` |
+| `VersionError`, or a stored version found newer before opening | `StorageError` `VERSION_CONFLICT`, reason `newer-version` |
+| `OpenFailedError`, `DatabaseClosedError`, `SecurityError`, `InvalidStateError`, `UnknownError`, `MissingAPIError` | `StorageError` `UNAVAILABLE` |
+| Anything else (`ConstraintError`, `DataError`, `TypeError`...) | Not a storage error: a programming error, rethrown unchanged. A more specific kind found anywhere in Dexie's wrapper chain wins over a generic wrapper |
 
 ## 12. Persistence (Dexie schema v1)
 
@@ -379,9 +393,12 @@ The Media Session adapter does the following:
 | `settings` | `&key` | Key–value pairs, validated with zod on read |
 | `playerSnapshot` | `&id` (single row `"current"`) | Queue, position, volume, shuffle, repeat |
 
+**Schema v1 as built (feature 002).** Declared in `infrastructure/persistence/database.ts` in database `mp-library`. The first entry of each definition is Dexie's primary key, which is unique by definition, so the `&` above is omitted there. `tracks` also has derived columns, `artistIds`, `providerId` and `addedAt`, set by the repository, because Dexie cannot index a computed value; `albums` and `artists` rows also carry `addedAt` (when the snapshot was first written). All twelve tables are declared in version 1 so later features need no upgrade. 002 builds only `tracks`, `albums`, `artists`, `libraryItems`, `likes`, `playlists` and `recentSearches`; `settings`, `playerSnapshot`, `playEvents`, `localFiles` and `localArtwork` are built by their features.
+
 **Migrations:**
-- Bump the Dexie `version(n)` with an explicit `upgrade()`. Migrations are tested with fixtures.
+- Add each later schema version to the registry in `infrastructure/persistence/migrations.ts` as `{ version, destructive, stores, upgrade }`. A unit test fails if any entry is `destructive` (not allowed until export exists, feature 010). Each entry is tested with fixtures from every earlier version.
 - Never ship a destructive migration without automatically offering an export first.
+- **Newer data is never touched.** Dexie 4 opens a database newer than the version declared and upgrades it again to add its missing tables, so the stored version is read first with `indexedDB.databases()`; if it is higher than the declared version times ten, the store is not opened, the app uses memory, and the banner says the newer data was left untouched.
 
 **Backup format** (SET-04):
 ```json
@@ -416,7 +433,7 @@ D2 stores local audio in IndexedDB through Dexie. This is the policy for quota (
 | ADR-001 | Client-only app, no backend | Personal use and a small beta. Avoids operations, auth and cost. | No cross-device sync; every device has its own library. |
 | ADR-002 | **Accepted (D1).** Standard `next build` (Vercel, or `next start` on Node). **Static export is not configured** (`output` is left unset). | Static export cannot serve runtime IDs (user playlists, local tracks) on `[id]` routes without `generateStaticParams` (bundled `static-exports.md`, "Unsupported Features"). The application stays backend-free: no route handlers, Server Actions, database or auth. | Needs a Next-capable host. |
 | ADR-003 | One `HTMLAudioElement` at module scope | Guarantees a single audio engine; immune to React remounts and StrictMode double effects. | Must be guarded for SSR (create lazily on the client only). |
-| ADR-004 | Library data read through Dexie `useLiveQuery`, not copied into Zustand | One source of truth, with no sync bugs between store and database. | Reads are async; components need loading states. |
+| ADR-004 | **Amended by 002 (2026-11-07).** Library data is read through repository `watch` ports, backed by Dexie `liveQuery` (which also reaches other tabs) or by the in-memory fallback. It is not copied into Zustand. | One source of truth, with no sync bugs between store and database. `useLiveQuery` observes only a Dexie database, so it cannot observe the in-memory fallback, and presentation may not import Dexie. | Reads are async; components need loading states. Each consuming feature wraps a `Watchable` in a small `useSyncExternalStore` hook instead of using `useLiveQuery`. `dexie-react-hooks` is not adopted. |
 | ADR-005 | A playlist stores an ordered `items[]` array | Atomic reorder, simple code, fine at personal scale (thousands of items). | Rewrites the whole record on each change; revisit above about 10k items. |
 | ADR-006 | **Accepted (D2).** Local audio is copied into IndexedDB (Dexie) as Blobs. No File System Access handles. | Works in every supported browser, survives reloads, needs no permission prompts. | Uses quota and duplicates disk space. Mitigated by quota handling and storage management (§12.1, PLAT-06, SET-07). |
 | ADR-010 | **Accepted (D5).** The public display name comes from one constant, `APP_DISPLAY_NAME`, used in `<title>`, metadata, the manifest, About and export file names. | "Metrolist Web Reimagined" is an internal working title only, and third-party branding must never reach public UI. | A later rename touches one constant plus the icons. |
@@ -424,3 +441,4 @@ D2 stores local audio in IndexedDB through Dexie. This is the policy for quota (
 | ADR-008 | Fixed Home section order | Predictability; lesson from the Metrolist audit. | Less sense of novelty. |
 | ADR-009 | **Superseded by ADR-011 (2026-11-07, O8).** Theme mirrored to `localStorage`, applied by a tiny inline script before paint | Prevents a light/dark flash, since IndexedDB is async. | Two copies of the theme setting; Dexie stays authoritative and rewrites the mirror. Confirmed (bundled `preventing-flash-before-hydration.md`); System resolved in CSS; Appearance selection shown from first paint via `<html>`-attribute CSS and a pre-hydration selection script (001 research R15). |
 | ADR-011 | **Accepted (O8, 2026-11-07).** One permanent dark visual identity (Abyss Copper, [design-system.md §2](design-system.md#2-color)), defined as static CSS tokens on `:root` with `color-scheme: dark`. No theme or accent setting, no pre-paint script, no `localStorage` mirror. Supersedes ADR-009. | Owner decision O8; constitution IX v2.0.0. Static CSS is correct from the first paint, so the no-flash criterion (UX-AC-10) needs no bootstrap. | Listeners who prefer a light UI have no option; forced-colours mode remains the high-contrast path (design-system §2.5). 014 removes the 001 appearance code and its stored values. |
+| ADR-012 | **Accepted (002, 2026-11-07).** Persistence behind application ports with two production backends, Dexie (IndexedDB) and an in-memory session fallback, chosen at runtime by a resilience facade that switches to memory at most once per session. Atomic groups of writes go through a unit of work. Rows are validated on read (zod), invalid rows are skipped and logged to an in-memory diagnostics log, and unknown fields are preserved on rewrite. | FR-016 requires the app to keep working when the device cannot save, with the same behaviour; a second real implementation behind the ports, proven by one shared contract suite, is the only way to guarantee that. The layer rules keep Dexie and zod in infrastructure. | More code than a single Dexie layer; a unit of work in the fallback is rolled back by snapshot, so it does not isolate concurrent writes. |

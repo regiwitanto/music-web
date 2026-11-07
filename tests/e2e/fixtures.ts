@@ -1,5 +1,6 @@
 import AxeBuilder from '@axe-core/playwright'
 import { test as base, expect, type Page } from '@playwright/test'
+import type { DiagnosticsLog, Storage } from '@/application/ports'
 
 /**
  * Shared E2E helpers for feature 001 (tasks.md T007).
@@ -110,6 +111,23 @@ export async function freezeSkeletonAnimations(page: Page): Promise<void> {
  */
 export async function waitForHydration(page: Page): Promise<void> {
   await page.waitForFunction(() => ((window as TestWindow).__SHELL_MOUNTS__?.shell ?? 0) >= 1)
+}
+
+/** The storage test hook (002 contracts; src/presentation/testing/storage-hooks.ts). */
+export type StorageHooks = {
+  storage: Storage
+  diagnostics: DiagnosticsLog
+  /** Values recorded by `record(name)`, each stamped with `Date.now()` when it arrived. */
+  watches: Record<string, Array<{ at: number; value: unknown }>>
+  record(name: 'likes' | 'playlists' | 'libraryItems' | 'recentSearches'): void
+  status(): { phase: string; notice: string | null }
+  showNotice(notice: 'unavailable' | 'newer-version' | 'blocked-upgrade' | 'stale-tab'): void
+}
+export type StorageWindow = Window & { __STORAGE__?: StorageHooks }
+
+/** Waits until the app has installed `window.__STORAGE__` (after the shell mounts, in the test-hooks build). */
+export async function waitForStorageHooks(page: Page, timeout = 10_000): Promise<void> {
+  await page.waitForFunction(() => (window as unknown as StorageWindow).__STORAGE__ !== undefined, undefined, { timeout })
 }
 
 /** Reads the per-component shell mount counters (ui-shell.md §7.1). */
