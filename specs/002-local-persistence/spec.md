@@ -4,7 +4,7 @@
 
 **Created**: 2026-11-06
 
-**Status**: Draft · reconciled 2026-11-07 after 014 (single permanent visual identity); clarification session 2026-11-07 in progress. Not approved (G1)
+**Status**: Approved (owner, 2026-11-07, G1), after reconciliation with 014 (D-002-4) and clarifications D-002-1, D-002-5 and D-002-6
 
 **Input**: User description: "002-local-persistence — Local persistence foundation (roadmap Phase 02; specs/README.md row 002). Covers PLAT-01 as scoped in the feature index: library and settings storage in the browser, and a private-mode / storage-unavailable fallback. Depends on 001-app-shell (accepted 2026-11-06), which ships the appearance settings store on the device. Do not include UI features of later specs (Library screens, playback, backup export/import SET-04, storage management SET-07, quota handling PLAT-06) beyond what PLAT-01's foundation needs; raise any scope question as [NEEDS CLARIFICATION] rather than inventing a decision."
 
@@ -53,9 +53,9 @@ Everything the later features will let a listener save on this device — likes,
 **Acceptance Scenarios**:
 
 1. **Given** a playlist with items in a chosen order, **When** the app is reloaded or the browser restarted, **Then** the playlist, its name, description and exact item order are unchanged.
-2. **Given** a liked track and a saved album, artist and track, **When** the app restarts with no network, **Then** each is still there, with the details needed to display it, without asking the catalog.
+2. **Given** a liked track and a saved album, artist and track, **When** the network is disconnected after the app has started, or the app restarts with the network available but the catalog unreachable, **Then** each is still there, with the details needed to display it, without asking the catalog. (Starting the app itself with no network needs the offline app shell, PLAT-04 in feature 012; corrected 2026-11-07 after `/speckit-analyze`, owner-approved, scope unchanged.)
 3. **Given** two writes that belong together (for example, a playlist change and the track details it needs), **When** one of them fails, **Then** neither is kept; nothing is left half-saved.
-4. **Given** a stored record that fails validation when read, **When** it is read, **Then** it is skipped (or replaced by defaults, for settings), the rest of the data loads, and the problem is recorded for diagnostics without reaching the listener as an error.
+4. **Given** a stored record that fails validation when read, **When** it is read, **Then** it is skipped, the rest of the data loads, and the problem is recorded for diagnostics without reaching the listener as an error.
 
 ---
 
@@ -107,7 +107,7 @@ When a new version of the app changes how data is stored, the listener's saved d
 ### Functional Requirements
 
 **Store and scope**
-- **FR-001**: The app MUST keep the listener's settings and library data in one on-device store (decision D2), with no network, account or server involved (constitution VI, XIII).
+- **FR-001**: The app MUST keep the listener's library data, and later their settings (the settings area is defined here but built by feature 010, D-002-5), in one on-device store (decision D2), with no network, account or server involved (constitution VI, XIII).
 - **FR-002**: The store's first version MUST define the storage areas for: settings; likes; playlists (with ordered items); saved library items (albums, artists, tracks); track, album and artist details snapshots; and recent searches. It MUST also define the areas owned by later features (play history, player snapshot, imported audio files and artwork), so those features need no version upgrade. This feature builds and tests only the library areas; the settings area is defined but not built, and feature 010 adds its read, write and validation with its first real setting (D-002-1, D-002-5).
 - **FR-003**: Each storage area MUST be read and written only through the app's data-access layer, never directly by screens (constitution VIII; architecture §3).
 - **FR-004**: Business rules that belong to consuming features (for example the cap of 10 recent searches, EXP-02, or history pruning) are NOT part of this feature; the store MUST allow them to be enforced by those features.
@@ -127,7 +127,7 @@ When a new version of the app changes how data is stored, the listener's saved d
 - **FR-016**: If the device store cannot be opened, or becomes unavailable during a session, the app MUST keep working with in-memory storage for the session, with the same behaviour for every feature except that nothing survives a reload.
 - **FR-017**: In that mode the app MUST show a persistent banner on every page reading "Storage is unavailable: your changes won't be saved.", the same for every cause: private mode, blocked site data, data cleared mid-session, or data from a newer version (D-002-6; UX §7). It MUST be announced as a status message, MUST NOT take focus, MUST NOT cover content or the navigation, and MUST meet the 001 accessibility rules.
 - **FR-018**: Removed (O8, D-002-4). It covered the appearance choice in the unavailable-store mode. The ID is kept and not reused.
-- **FR-019**: Errors from the store MUST be reported to callers as the storage error kinds in architecture §11 (unavailable, quota exceeded, version conflict), never as unhandled errors.
+- **FR-019**: Errors from the store MUST be reported to callers as the storage error kinds in architecture §11 (unavailable, quota exceeded, version conflict), never as unhandled errors. Programming errors (for example a constraint violation caused by a caller bug) are not store failures: they are rethrown unchanged and caught by tests, so they never trigger the unavailable-store fallback (research R7).
 
 **Upgrades**
 - **FR-020**: Every change to the stored data's structure MUST come with an automatic upgrade from each earlier version, tested against fixture data from each earlier version.
