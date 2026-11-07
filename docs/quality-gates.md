@@ -251,5 +251,5 @@ Evidence for finding 2: before the fix, the first two new tests failed 6 of 6 (C
 6. **Follow-ups proposed (not 014 scope):**
    - give `global-error.tsx` the font variable classes (a gap that predates 014);
    - define the `danger` button variant's hover and pressed tokens when the first danger action is built;
-   - retire the `mp.appearance` cleanup (`ObsoleteDataCleaner`) with 002's settings store or at Phase 06;
+   - retire the `mp.appearance` cleanup (`ObsoleteDataCleaner`) at Phase 06 (002 builds no settings store, per its D-002-5);
    - set the manifest and browser `theme_color` to `#101B23` in 012 (PLAT-03).
