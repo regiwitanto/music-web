@@ -96,7 +96,12 @@ show the alternative.
   a screen reader.
 - Layouts MUST work from 320 px to wide desktop without horizontal page scroll, and no content may
   be hidden behind the player or navigation.
-- The user's system reduced-motion and colour-scheme preferences MUST be honoured.
+- The user's system reduced-motion preference MUST be honoured.
+- The app has one permanent dark visual identity. It offers no theme or accent choice and does not
+  follow the system colour-scheme preference. Native browser surfaces (form controls, scrollbars)
+  MUST match that identity.
+- The system forced-colours (high-contrast) mode MUST be honoured: content, state and focus
+  indicators stay visible and usable.
 - Accessibility regressions block merge on the same terms as functional regressions.
 
 *Rationale:* Accessibility is a P0 product goal (G4), not polish.
@@ -104,8 +109,8 @@ show the alternative.
 ### X. Automated Testing of Critical Behaviour
 
 - Critical behaviour MUST have automated tests: queue rules, playback state machine, persistence
-  and backup round-trip, provider contracts, navigation continuity, theming and accessibility
-  scans.
+  and backup round-trip, provider contracts, navigation continuity, visual-identity tokens and
+  contrast, and accessibility scans.
 - Tests MUST be deterministic (injected clock and RNG, fixed fixtures, no real network).
 - Test audio MUST be generated at test time. No third-party audio is committed for tests.
 - Results MUST be reported exactly as they ran. A test that did not run is "not run", never
@@ -205,4 +210,4 @@ show the alternative.
   - PATCH: wording and clarifications.
 - Compliance is checked at every plan (Constitution Check), at `/speckit-analyze`, and at review.
 
-**Version**: 1.1.0 | **Ratified**: 2026-11-05 | **Last Amended**: 2026-11-06
+**Version**: 2.0.0 | **Ratified**: 2026-11-05 | **Last Amended**: 2026-11-07
