@@ -1,6 +1,6 @@
 # UX Specification
 
-> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05 · **Amended:** 2026-11-07 (O8: one permanent dark visual identity; SET-01 and SET-02 withdrawn)
 > **Owns:** layouts, navigation behaviour, screen-by-screen content, Now Playing and queue interactions, states, keyboard and focus behaviour, measurable UX acceptance criteria (UX-AC).
 > **Related:** feature IDs in [product-requirements.md §5](product-requirements.md#5-features-and-priorities) · visual tokens in [design-system.md](design-system.md) · state model in [architecture.md](architecture.md) · how each criterion is tested in [testing/test-plan.md](testing/test-plan.md)
 
@@ -10,7 +10,7 @@
 2. **Predictable over novel.** Fixed navigation, a fixed Home order, consistent placement of actions.
 3. **One obvious primary action per surface.** For example, the Play button on album and playlist headers.
 4. **Show state honestly.** Loading, buffering, empty, error and preview-only states are always explicit.
-5. **Calm visuals; artwork is the colour.** Neutral chrome, with colour coming from the accent and from album art.
+5. **Calm visuals; artwork is the colour.** One permanent dark identity with calm blue-slate chrome. Colour comes from album art and from a single fixed accent (Muted Copper), used sparingly so the artwork stays the visual focus ([design-system.md §1–2](design-system.md#1-principles)).
 6. **Everything works by keyboard, touch and screen reader.**
 
 ## 2. Layout and breakpoints
@@ -123,9 +123,11 @@ The order is fixed, top to bottom. A section with no data is **hidden**, except 
 ### 4.4 Settings (`/settings`)
 A single scrollable page with grouped sections and a sticky in-page section index on desktop. Every change takes effect immediately; there is no Save button.
 
+There is **no Appearance section**: the app has one permanent dark visual identity and no theme or accent choice (O8; SET-01 and SET-02 withdrawn). The reduced-motion override lives in **Accessibility** and appears when SET-06 ships.
+
 | Section | Controls | ID |
 |---|---|---|
-| Appearance | Theme (System / Light / Dark / OLED Black) as a radio group with previews; Accent (8 swatches as a radio group); Reduced motion (P1) | SET-01, SET-02, SET-06 |
+| Accessibility | Reduced motion override: System / On / Off (P1) | SET-06 |
 | Playback | Remember shuffle & repeat; Restore queue on launch; Default volume (hidden on iOS) | SET-03 |
 | Storage | See §4.5 | SET-07, PLAT-06 |
 | Library & Data | Export backup; Import backup (confirm replace); Reset all data (type "RESET" to confirm) | SET-04 |
@@ -166,7 +168,7 @@ The rules behind this screen are in [architecture.md §12.1](architecture.md#121
 - **Desktop:**
   - An overlay over the content area. The sidebar and player bar stay visible, and the bar's controls remain the single control surface.
   - Shows large artwork, metadata and a lyrics or queue tab panel on the right.
-- **Background** (NP-04): the artwork scaled up, blurred (≥ 60 px) and dimmed with a theme scrim so contrast requirements still hold. Accent tinting from the artwork is P1 (NP-15).
+- **Background** (NP-04): the artwork scaled up, blurred (≥ 60 px) and dimmed with a scrim ([design-system.md §2.3](design-system.md#23-now-playing-scrim)) so contrast requirements still hold. Accent tinting from the artwork is P1 (NP-15).
 - **Previous:** restarts the track if more than 3 s has played.
 - **Seek:**
   - Dragging previews the time without seeking.
@@ -271,9 +273,9 @@ Each criterion is verifiable by an automated or scripted manual test (see [testi
 | UX-AC-06 | Responsive | Resizing across breakpoints while playing preserves playback, queue and open-panel state (the queue panel turns into the mobile tab). |
 | UX-AC-07 | Keyboard | Every interactive element is reachable with Tab or Shift+Tab, in a logical order, with a visible focus ring of ≥ 3:1 contrast. Every P0 user flow in the test plan can be completed **keyboard-only**. |
 | UX-AC-08 | Keyboard | Every shortcut in §8 works and does not fire while typing in an input. |
-| UX-AC-09 | Accessibility | axe-core reports **0 serious or critical violations** on every destination and detail page, in all three themes. |
-| UX-AC-10 | Theme | Switching theme or accent takes effect immediately across the whole visible UI, with no reload or Save. The choice persists across reload. On initial load, the persisted theme and accent are applied before any app content becomes visible, so there is **no visible flash** of the wrong theme. |
-| UX-AC-11 | Theme | Every text/background token pair meets AA in Light, Dark and OLED ([design-system.md §2](design-system.md#2-color)). OLED uses `#000000` for the page background. |
+| UX-AC-09 | Accessibility | axe-core reports **0 serious or critical violations** on every destination and detail page, on the visual identity. |
+| UX-AC-10 | Visual identity | On every load the visual identity is applied from the first paint, with no script, stored preference or user choice involved, so there is **no visible flash** of another colour scheme. The page declares a dark colour scheme, so native browser surfaces (form controls, scrollbars) match it. The system light/dark preference does not change the UI. *(Amended 2026-11-07, O8: replaces theme and accent switching and persistence.)* |
+| UX-AC-11 | Visual identity | Every token pair of the identity meets WCAG 2.2 AA ([design-system.md §2](design-system.md#2-color)): text ≥ 4.5:1; UI component boundaries and focus indicators ≥ 3:1. The page background is never pure `#000000`. In forced-colours (high-contrast) mode, content, state and focus indicators stay visible and usable ([design-system.md §2.5](design-system.md#25-forced-colours)). *(Amended 2026-11-07, O8.)* |
 | UX-AC-12 | Library persistence | Likes, playlists (name, order, items), saved albums and artists, settings, recent searches and the player snapshot all survive a hard reload and a browser restart. Verified by comparing a backup export before and after (equal except for timestamps). |
 | UX-AC-13 | Library persistence | Export, then reset, then import restores an identical library (verified the same way). |
 | UX-AC-14 | Search | With the mock provider, results render within 300 ms of the 250 ms debounce ending (p95 across 20 queries in E2E). The input never loses typed characters, and stale responses never overwrite newer ones. |

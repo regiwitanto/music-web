@@ -1,6 +1,6 @@
 # Test Plan
 
-> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-06 (§2 trace retention)
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-07 (O8: E2E-09, UX-AC-10 trace, §7, beta step 8)
 > **Owns:** test strategy, tooling, test levels, the provider contract suite, traceability from criteria to tests, the browser audio matrix, accessibility and performance methods, and the manual beta checklist.
 > **Related:** criteria in [ux-specification.md §9](../ux-specification.md#9-measurable-ux-acceptance-criteria) · features in [product-requirements.md §5](../product-requirements.md#5-features-and-priorities) · architecture seams in [architecture.md](../architecture.md)
 
@@ -92,7 +92,7 @@ Tested under `fake-indexeddb`, with a stubbed `navigator.storage`. Cases:
 | E2E-06 Playlists | Create, rename, add tracks, reorder (pointer and keyboard), delete then undo, reload | UX-AC-23, -12 |
 | E2E-07 Local import | Import fixture files: valid MP3, a duplicate, an unsupported type, a corrupt file; check the summary and playback | UX-AC-20 |
 | E2E-08 Persistence | Like, playlist, settings, queue; reload and a new browser context with the same storage state; compare backups | UX-AC-12, -13 |
-| E2E-09 Theme | Switch each theme and accent; reload; check for no flash (screenshot at first paint with JS-controlled timing); run axe per theme | UX-AC-09, -10, -11 |
+| E2E-09 Visual identity | Cold load with JS-controlled timing: the identity's background, text and accent are applied at first paint (no flash) and the colour scheme is dark; emulate a light system preference: nothing changes; emulate forced colours: focus, active and selected states stay visible; run axe on every route | UX-AC-09, -10, -11 |
 | E2E-10 Autoplay | Open with a restored snapshot: paused, correct track and position; play only after a click | UX-AC-18 |
 | E2E-11 States | Mock failure injection for search, home and detail pages: error UI, then Retry recovers | UX-AC-22 |
 | E2E-12 Keyboard-only | E2E-04 and E2E-06 run using only the keyboard | UX-AC-07, -08 |
@@ -117,7 +117,7 @@ Tested under `fake-indexeddb`, with a stubbed `navigator.storage`. Cases:
 | UX-AC-07 | — | All interactive components | E2E-01, -12 | §8 |
 | UX-AC-08 | shortcut handler | — | E2E-12 | — |
 | UX-AC-09 | — | — | E2E-09 (axe on all pages) | — |
-| UX-AC-10 | settings store | — | E2E-09 | — |
+| UX-AC-10 | — | — | E2E-09 | — |
 | UX-AC-11 | token contrast test (computes ratios from `globals.css`) | — | E2E-09 | — |
 | UX-AC-12 | repositories | — | E2E-06, -08 | §8 |
 | UX-AC-13 | backup round-trip | — | E2E-08 | — |
@@ -169,7 +169,7 @@ Codec rows feed the import-time `canPlayType` check. The app relies on that runt
 ## 7. Accessibility and performance methods
 
 **Accessibility**
-- axe runs on every route and in every theme in E2E (E2E-09); serious and critical violations fail the build.
+- axe runs on every route in E2E (E2E-09); serious and critical violations fail the build.
 - Before each phase gate, a manual screen-reader pass: VoiceOver on macOS and iOS, and NVDA on Windows if one is available, otherwise TalkBack. It covers the nav, search, a playlist, the player, the queue and the dialogs. The owner may defer it under [quality-gates §1](../quality-gates.md#deferral-of-manual-verifications) "Deferral of manual verifications"; a deferred pass is done before the stage named in the register (001: before the Phase 06 beta deployment, deferred 2026-11-06; later phase gates are unaffected unless the owner defers them separately). The axe scans and the keyboard and focus tests are never deferred.
 - A focus-order check at 200% zoom.
 
@@ -190,7 +190,7 @@ Run on each device and browser combination a tester uses. Record pass, fail or n
 5. Import 3 local files. They play. Reload: they are still there.
 6. Like a song, create a playlist, reorder it, reload: everything persists.
 7. Search for an artist from the catalog, open the artist page, then an album, and play it.
-8. Switch theme and accent. Reload: the setting is kept and there is no flash.
+8. Reload and cold-start the app, also with the device set to a light appearance: the dark identity appears from the first paint with no flash. If the device has a high-contrast or forced-colours mode, turn it on: focus and the active item stay visible.
 9. Export a backup, reset the data, import the backup: everything is restored.
 10. Open Settings → Storage. The usage figure looks plausible, the protection status is shown, and removing one imported file lowers the usage figure.
 11. Export diagnostics (PLAT-05) and attach it to any bug report.

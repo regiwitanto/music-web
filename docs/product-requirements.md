@@ -1,7 +1,7 @@
 # Product Requirements
 
 > **Internal working title:** *Metrolist Web Reimagined*. It may be used only in internal planning docs and the repository. It must **never** appear in the public-facing UI (see D5).
-> **Status:** Phase 00 final · **Decisions approved:** 2026-11-05
+> **Status:** Phase 00 final · **Decisions approved:** 2026-11-05 · **Amended:** 2026-11-07 (O8: one permanent dark visual identity; SET-01 and SET-02 withdrawn)
 > **Owns:** vision, users, scope, information architecture, feature IDs and priorities, the music-source policy, assumptions.
 > **Related:** [ux-specification.md](ux-specification.md) · [architecture.md](architecture.md) · [provider-contract.md](provider-contract.md) · [roadmap.md](roadmap.md) · [testing/test-plan.md](testing/test-plan.md) · [metrolist-audit.md](metrolist-audit.md)
 
@@ -131,12 +131,12 @@ Home section order is **fixed**, not randomized; see [metrolist-audit.md §3](me
 ### 5.5 Settings (SET)
 | ID | Feature | P |
 |---|---|---|
-| SET-01 | Theme: Light / Dark / OLED Black / System | P0 |
-| SET-02 | Accent color (8 presets) | P0 |
+| SET-01 | ~~Theme: Light / Dark / OLED Black / System~~ **Withdrawn (O8, 2026-11-06).** Replaced by one permanent dark visual identity ([design-system.md §2](design-system.md#2-color)). Shipped in 001, removed by 014. The ID is kept and not reused | Withdrawn |
+| SET-02 | ~~Accent color (8 presets)~~ **Withdrawn (O8, 2026-11-06).** One fixed accent, Muted Copper; there is no user-selectable accent. Shipped in 001, removed by 014. The ID is kept and not reused | Withdrawn |
 | SET-03 | Playback preferences: remember shuffle and repeat, restore the queue on launch, default volume, "auto-play similar" off by default (P2) | P0 |
 | SET-04 | Data export and import as versioned JSON, plus reset all data | P0 |
 | SET-05 | About: version, build, licenses, privacy statement | P0 |
-| SET-06 | Reduced-motion override (system / on / off) | P1 |
+| SET-06 | Reduced-motion override (system / on / off), in the Settings **Accessibility** section (O8) | P1 |
 | SET-07 | Storage management: usage vs quota (StorageManager estimate), a breakdown (local audio / artwork / library data), the list of imported files sorted by size with per-file delete, "Remove all local audio", and persistent-storage status | P0 |
 
 Budget: no more than about 20 user-facing settings in MVP. Alternative designs are never offered as settings.
@@ -166,7 +166,7 @@ Budget: no more than about 20 user-facing settings in MVP. Alternative designs a
 | ID | Feature | P |
 |---|---|---|
 | PLAT-01 | Local persistence of the library, settings, history and player snapshot (IndexedDB) | P0 |
-| PLAT-02 | Accessibility baseline (WCAG 2.2 AA) | P0 |
+| PLAT-02 | Accessibility baseline (WCAG 2.2 AA) on the single dark visual identity, including forced-colours (high-contrast) support; the system light/dark preference is not followed (constitution IX, v2.0.0) | P0 |
 | PLAT-03 | Installable PWA (manifest, icons) | P1 |
 | PLAT-04 | Offline app shell (service worker) | P1 |
 | PLAT-05 | Local diagnostics log, exportable for bug reports | P1 |

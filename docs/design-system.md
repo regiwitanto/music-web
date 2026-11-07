@@ -1,71 +1,59 @@
 # Design System
 
-> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05 · **Amended:** 2026-11-07 (O8: one permanent dark visual identity; SET-01 and SET-02 withdrawn)
 > **Owns:** visual principles, tokens (colour, type, spacing, shape, elevation, motion), iconography, artwork rules, the component inventory, and how tokens are implemented in Tailwind v4.
-> **Related:** layouts and behaviour in [ux-specification.md](ux-specification.md) · themes and accents are user settings SET-01 and SET-02 ([product-requirements.md](product-requirements.md#55-settings-set))
+> **Related:** layouts and behaviour in [ux-specification.md](ux-specification.md) · the visual identity is fixed; the theme and accent settings SET-01 and SET-02 are withdrawn (O8, [product-requirements.md](product-requirements.md#55-settings-set))
 
 ## 1. Principles
 
-- **Neutral chrome, colourful content.** The interface is greyscale; colour comes from the single accent colour and from artwork.
+- **Calm chrome, colourful content.** The interface uses the deep blue-slate neutrals of the Abyss Copper identity (§2). Colour comes from artwork and from the single copper accent.
 - **Calm density.** Generous spacing on discovery surfaces (Home, Explore), compact rows on management surfaces (Library, Queue).
-- **One accent, used sparingly.** Use it for the active navigation item, the primary action, slider fill, focus ring, selection and the "now playing" indicator. Never use it for body text blocks.
+- **One accent, used sparingly.** Use it for the active navigation item, the primary action, slider fill, focus ring, selection and the "now playing" indicator. Never use it for body text blocks or large surfaces. Artwork stays the visual focus: no glow, no neon.
 - **Original look.** Draw no product's iconography, layout signatures or brand colours directly from Spotify, YouTube Music, Apple Music or Metrolist.
 
 ## 2. Color
 
-### 2.1 Neutral tokens per theme
+**Visual direction: Abyss Copper** (owner decisions O8 K1 and K2, 2026-11-07). The app has one permanent dark identity: deep blue-slate neutrals and a single muted copper accent. There is no theme or accent choice, and the system light/dark preference is not followed ([constitution](../.specify/memory/constitution.md) IX, v2.0.0).
 
-Applied via `data-theme` on `<html>`. **System** resolves to Light or Dark through `prefers-color-scheme`.
+Direction rules:
+- Album artwork is the visual focus. Copper is an accent, applied sparingly (§1).
+- No pure black (`#000000`) backgrounds, no neon or highly saturated accents, no glow effects, and no large copper-coloured surfaces. Copper fills are limited to small controls (the primary play button, slider fill, selection marks).
+- WCAG 2.2 AA contrast, visible keyboard focus and forced-colours support are required (§2.4, §2.5).
 
-| Token | Use | Light | Dark | OLED Black |
-|---|---|---|---|---|
-| `--bg` | Page background | `#FFFFFF` | `#121214` | `#000000` |
-| `--surface` | Sidebar, player bar, cards | `#F4F4F6` | `#1B1B1F` | `#0E0E10` |
-| `--raised` | Menus, dialogs, hovered rows | `#FFFFFF` (+ shadow) | `#25252A` | `#1A1A1D` |
-| `--text` | Primary text, icons | `#111114` | `#F2F2F5` | `#F2F2F5` |
-| `--text-muted` | Secondary text, metadata | `#5B5B66` | `#A3A3AD` | `#A3A3AD` |
-| `--border-strong` | Input and control borders (must be ≥ 3:1) | `#8A8A96` | `#6E6E78` | `#6A6A73` |
-| `--divider` | Decorative separators (no contrast requirement) | `#E4E4E8` | `#2A2A2F` | `#1C1C1F` |
-| `--danger` | Destructive actions and errors | `#C42B2B` | `#F87171` | `#F87171` |
+### 2.1 Approved palette
 
-**Computed contrast**
+This is the **approved design direction, not yet a validated token system**. The remaining semantic tokens are derived during feature 014 planning.
 
-These ratios were calculated with the WCAG 2.x relative-luminance formula on 2026-11-05. They must be recalculated whenever a value changes.
+| Role | Token | Value |
+|---|---|---|
+| Page background | `--bg` | `#101B23` |
+| Surface (sidebar, player bar, cards) | `--surface` | `#182731` |
+| Primary accent, **Muted Copper** | `--accent` | `#D8AD88` |
+| Primary text, icons | `--text` | `#E8EDF0` |
+| Secondary text, metadata | `--text-muted` | `#A9B9C1` |
 
-| Pair | Light | Dark | OLED | Requirement |
-|---|---|---|---|---|
-| text / bg | 18.85 | 16.75 | 18.79 | ≥ 4.5 |
-| text / raised | 18.85 | 13.65 | 15.54 | ≥ 4.5 |
-| text-muted / bg | 6.70 | 7.48 | 8.40 | ≥ 4.5 |
-| text-muted / raised (worst surface) | 6.10 (surface) | 6.10 | 6.95 | ≥ 4.5 |
-| border-strong / bg | 3.41 | 3.71 | 3.92 | ≥ 3.0 (non-text UI) |
-| border-strong / raised | 3.11 (surface) | 3.02 | 3.24 | ≥ 3.0 |
+**To be derived in the 014 plan** (not decided here): `--raised`; `--border-strong` (≥ 3:1 against `--bg` and every surface); `--divider`; `--danger` (clearly distinguishable from copper, and never shown by colour alone); `--on-accent`; accent hover and pressed shades; the hover, pressed and selected overlays; the focus-ring colour and offset; the Now Playing scrim colour (§2.3). The plan records each value with its computed contrast, and this section is then updated.
 
-OLED rule: `--bg` is pure `#000000`. Surfaces stay near-black, so pixels can switch off and the layers are still distinguishable.
+**Computed contrast of the approved values**
 
-### 2.2 Accent colours (SET-02)
+Calculated with the WCAG 2.x relative-luminance formula on 2026-11-07. They must be recalculated whenever a value changes.
 
-Each accent has one value for Light and another shared by Dark and OLED. `--on-accent` is the text or icon colour used on an accent fill.
+| Pair | Ratio | Requirement |
+|---|---|---|
+| text / bg | 14.80 | ≥ 4.5 |
+| text / surface | 12.96 | ≥ 4.5 |
+| text-muted / bg | 8.64 | ≥ 4.5 |
+| text-muted / surface | 7.57 | ≥ 4.5 |
+| accent / bg | 8.52 | ≥ 4.5 as text; ≥ 3.0 as a UI component or focus indicator |
+| accent / surface | 7.47 | same |
+| bg on accent (candidate `--on-accent`) | 8.52 | ≥ 4.5 |
+| surface / bg | 1.14 | none: a layer step only. A boundary that carries meaning also needs `--border-strong` |
 
-| Accent | Light | on-accent | Dark / OLED | on-accent |
-|---|---|---|---|---|
-| **Violet** (default) | `#6D3FE0` | `#FFFFFF` | `#A78BFA` | `#111114` |
-| Blue | `#1F5FD6` | `#FFFFFF` | `#7AA7FF` | `#111114` |
-| Teal | `#0B7C78` | `#FFFFFF` | `#2DD4BF` | `#111114` |
-| Green | `#1F7A35` | `#FFFFFF` | `#4ADE80` | `#111114` |
-| Amber | `#A15C00` | `#FFFFFF` | `#FBBF24` | `#111114` |
-| Orange | `#C2410C` | `#FFFFFF` | `#FB923C` | `#111114` |
-| Rose | `#C0265B` | `#FFFFFF` | `#FB7199` | `#111114` |
-| Red | `#C42B2B` | `#FFFFFF` | `#F87171` | `#111114` |
+The 001 Light, Dark and OLED Black tables and the 8 accent presets are withdrawn with SET-01 and SET-02. Their values remain in git history and in the 001 artifacts.
 
-**Computed (worst case across themes)**
-- accent on `--surface`: ≥ 4.59 (Light Teal is the lowest)
-- accent on `--bg`: ≥ 5.04
-- `--on-accent` on accent: ≥ 5.04
+### 2.2 Accent
 
-So every accent can also be used as text for active navigation labels and links.
-
-Red duplicates `--danger`. When Red is the accent, destructive buttons keep the same colour but **must** also show an icon and a label, never colour alone.
+One fixed accent: **Muted Copper `#D8AD88`**. There is no user-selectable accent (SET-02 withdrawn). Use it, as in §1, for the active navigation item, the primary action, slider fill, the focus ring, selection and the "now playing" indicator. Never use it for body text blocks, backgrounds or other large fills.
 
 ### 2.3 Now Playing scrim
 
@@ -75,7 +63,7 @@ On the worst case (pure white artwork) this gives:
 - primary text `#F2F2F5`: **7.57:1**
 - secondary text, `#F2F2F5` at 80% opacity: **5.54:1**
 
-Because of the scrim, the expanded player always uses dark-mode text tokens, whatever the theme. Making the scrim strength depend on sampled luminance is P1, together with NP-15.
+The ratios above were computed for the 001 text value `#F2F2F5`. The 014 plan recalculates them with `--text` `#E8EDF0` and decides whether the scrim stays black or is tinted toward `--bg` (it is an overlay on artwork, not a page background). The expanded player uses the identity's text tokens. Making the scrim strength depend on sampled luminance is P1, together with NP-15.
 
 ### 2.4 State colours
 
@@ -85,7 +73,11 @@ Because of the scrim, the expanded player always uses dark-mode text tokens, wha
 | Pressed | Pressed overlay: `--text` at 10% |
 | Selected row | Accent at 12% background, plus accent text for the title |
 | Disabled | 40% opacity, and `aria-disabled` |
-| Focus ring | 2 px solid accent with a 2 px offset in `--bg` (≥ 3:1 against adjacent colours by §2.2) |
+| Focus ring | 2 px solid accent with a 2 px offset in `--bg` (accent / bg 8.52, accent / surface 7.47, §2.1). The final treatment is confirmed in the 014 plan |
+
+### 2.5 Forced colours
+
+In forced-colours mode (for example Windows High Contrast), the browser's system colours replace the identity. Content, state (active navigation item, selection, pressed toggles, disabled controls) and focus indicators MUST stay visible: state is never shown by colour or background alone, and focus uses an outline that the forced palette keeps. 001 already ships a forced-colours fallback in `globals.css`; 014 verifies it against the new identity.
 
 ## 3. Typography
 
@@ -123,9 +115,7 @@ The font is **Geist Sans**, already loaded via `next/font` in `src/app/layout.ts
 | `radius-art` | 8 px (2 px for 40 px thumbnails) | Album artwork |
 | `radius-full` | 9999 px | Artist images (circles), play button, avatar tiles |
 
-**Elevation** uses colour steps in Dark and OLED (`surface` → `raised`). In Light it uses shadows:
-- `shadow-1`: `0 1px 2px rgb(0 0 0 / .06), 0 1px 3px rgb(0 0 0 / .08)`, for cards on hover
-- `shadow-2`: `0 8px 24px rgb(0 0 0 / .12)`, for menus and dialogs
+**Elevation** uses colour steps (`bg` → `surface` → `raised`). Because surface / bg is only 1.14:1, an element that must read as a separate layer (menus, dialogs) also gets a `--divider` border or a soft dark shadow. The exact treatment is derived in the 014 plan. No glow. (The 001 light-theme shadow tokens are withdrawn.)
 
 ## 6. Motion
 
@@ -164,7 +154,7 @@ The font is **Geist Sans**, already loaded via `next/font` in `src/app/layout.ts
 - Aspect ratio is always 1:1, with `object-fit: cover` and a `radius-art` corner.
 - **Placeholder** (artwork missing or failed to load): a gradient made from a hash of the entity ID, plus a centred `Music` or `Disc` icon. It never leaves an empty box, and the layout does not shift.
 - **Sizes requested:** 64 px for rows, 300 px for cards, 640 px for Now Playing. Local artwork is downscaled once at import, to 512 px JPEG/WebP.
-- **Colour sampling** (NP-15, P1): run once per artwork on a 32×32 canvas and cache the result in `Artwork.dominantColor`. Only the Now Playing accent tint uses it, and only after checking it reaches ≥ 3:1 against the scrim. Otherwise it falls back to the user's accent.
+- **Colour sampling** (NP-15, P1): run once per artwork on a 32×32 canvas and cache the result in `Artwork.dominantColor`. Only the Now Playing accent tint uses it, and only after checking it reaches ≥ 3:1 against the scrim. Otherwise it falls back to the identity accent (Muted Copper).
 - Artwork is treated as decorative: `alt=""` when the title is adjacent, otherwise `alt="{album} cover"`.
 
 ## 9. Component inventory
@@ -197,8 +187,8 @@ Each component must have:
 ## 10. Implementation notes (Tailwind v4)
 
 - Tokens are defined as CSS custom properties in `src/app/globals.css`, using the existing `@import "tailwindcss"` and `@theme inline` pattern.
-- **Neutral tokens** are scoped by `[data-theme="light"|"dark"|"oled"]` on `<html>`.
-- **Accent tokens** are scoped by `[data-accent="violet"|…]` and come in two values: one for `data-theme=light` and one for the dark themes.
+- **All colour tokens** are defined once, on `:root`. There is no `data-theme` or `data-accent` attribute and no `prefers-color-scheme` switch. The root declares `color-scheme: dark`, so native controls and scrollbars match the identity.
+- **Forced colours:** `@media (forced-colors: active)` rules implement §2.5.
 - Tailwind utilities map to the semantic tokens, for example `bg-surface`, `text-muted`, `border-strong`, `ring-accent`. Components use **only semantic tokens**, never raw hex values or Tailwind palette colours. This is enforced in review, with an optional lint later.
-- shadcn's generated CSS variables (`--background`, `--primary`, …) are aliased to these tokens, so generated components inherit the themes.
-- Theme bootstrap: see ADR-009 in [architecture.md](architecture.md#13-decision-log-adrs).
+- shadcn's generated CSS variables (`--background`, `--primary`, …) are aliased to these tokens, so generated components inherit the identity.
+- No theme bootstrap is needed: the identity is static CSS, correct from the first paint (ADR-011, which supersedes ADR-009, in [architecture.md](architecture.md#13-decision-log-adrs)).

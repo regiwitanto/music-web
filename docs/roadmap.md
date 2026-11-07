@@ -1,6 +1,6 @@
 # Development Roadmap
 
-> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05 · **Amended:** 2026-11-07 (O8: one permanent dark visual identity; SET-01 and SET-02 withdrawn)
 > **Owns:** phase sequencing, the scope of each phase (by feature ID), deliverables, dependencies, acceptance criteria, Definition of Done, risks, and the proposed Spec Kit feature breakdown.
 > **Related:** feature IDs and priorities in [product-requirements.md §5](product-requirements.md#5-features-and-priorities) · UX criteria (UX-AC-xx) in [ux-specification.md §9](ux-specification.md#9-measurable-ux-acceptance-criteria) · test approach in [testing/test-plan.md](testing/test-plan.md)
 
@@ -34,10 +34,10 @@ The roadmap has no calendar dates. The pace is personal, so each phase ends at i
 | | |
 |---|---|
 | **Objectives** | Tooling, tokens and a responsive shell with the 4 destinations, before any real features. |
-| **Scope** | SHELL-01, SHELL-02, SHELL-05; SET-01 and SET-02 (theme and accent switching only); PLAT-02 baseline; the design-system tokens and base components. |
-| **Deliverables** | Constitution (via Spec Kit). Tooling: Vitest, RTL, Playwright, ESLint layer rules, CI workflow. Tokens in `globals.css`. shadcn setup. Sidebar, BottomNav, an empty PlayerBar placeholder, and placeholder pages for the 4 destinations. Theme bootstrap with no flash (ADR-009). Folder layout ([architecture.md §4](architecture.md#4-folder-layout)). The `APP_DISPLAY_NAME` constant, used in `<title>` and metadata (ADR-010), replaces the scaffold's "Create Next App" metadata. A standard `next build` with **no** `output: 'export'` (D1). |
+| **Scope** | SHELL-01, SHELL-02, SHELL-05; SET-01 and SET-02 (theme and accent switching only; shipped in 001, **withdrawn** by O8 on 2026-11-06 and removed by 014, which replaces them with one permanent dark visual identity); PLAT-02 baseline; the design-system tokens and base components. |
+| **Deliverables** | Constitution (via Spec Kit). Tooling: Vitest, RTL, Playwright, ESLint layer rules, CI workflow. Tokens in `globals.css`. shadcn setup. Sidebar, BottomNav, an empty PlayerBar placeholder, and placeholder pages for the 4 destinations. Theme bootstrap with no flash (ADR-009; superseded by ADR-011, the identity is static CSS). Folder layout ([architecture.md §4](architecture.md#4-folder-layout)). The `APP_DISPLAY_NAME` constant, used in `<title>` and metadata (ADR-010), replaces the scaffold's "Create Next App" metadata. A standard `next build` with **no** `output: 'export'` (D1). |
 | **Dependencies** | Phase 00 sign-off. |
-| **Acceptance criteria** | UX-AC-05 (shell only), UX-AC-07 (shell), UX-AC-09, UX-AC-10, UX-AC-11, UX-AC-25 (branding scan in CI). Lint rules block `domain/` from importing React or Dexie. |
+| **Acceptance criteria** | UX-AC-05 (shell only), UX-AC-07 (shell), UX-AC-09, UX-AC-10, UX-AC-11 (UX-AC-10 and -11 amended 2026-11-07 for 014), UX-AC-25 (branding scan in CI). Lint rules block `domain/` from importing React or Dexie. |
 | **Definition of Done** | Global DoD, plus a Playwright smoke test that navigates all 4 destinations in Chromium, Firefox and WebKit at mobile and desktop widths. |
 | **Risks** | Next 16 API differences. *Mitigation:* read the bundled docs first. shadcn and Tailwind v4 integration friction. *Mitigation:* pin versions and add components one at a time. |
 
@@ -47,7 +47,7 @@ The roadmap has no calendar dates. The pace is personal, so each phase ends at i
 |---|---|
 | **Objectives** | Every screen built with the mock provider, every state visible, with no real audio yet. |
 | **Scope** | SRC-01 (MockProvider and fixtures); ProviderRegistry; HOME-01, -02, -04 to -07 (mock-driven, with empty history); EXP-01 to EXP-08; LIB-01 to -08 *UI* running on Dexie (likes, playlists, library items, recent searches); SET-05; context menus; toasts; loading, empty and error states. |
-| **Deliverables** | Home, Explore (search, filters, genre, mood, artist, album), Library (types, sort, filter, search, playlist CRUD), Settings (Appearance and About). Dexie schema v1 (all tables). Mock fixture generator script. |
+| **Deliverables** | Home, Explore (search, filters, genre, mood, artist, album), Library (types, sort, filter, search, playlist CRUD), Settings (About). Dexie schema v1 (all tables). Mock fixture generator script. |
 | **Dependencies** | Phase 01. |
 | **Acceptance criteria** | UX-AC-14, UX-AC-15, UX-AC-22, UX-AC-23 (without keyboard reorder); UX-AC-12 for library data; mock failure injection shows every error state. |
 | **Definition of Done** | Global DoD. Provider contract tests pass against MockProvider. |
@@ -148,7 +148,7 @@ The roadmap has no calendar dates. The pace is personal, so each phase ends at i
 
 | Priority | Ph 01 | Ph 02 | Ph 03 | Ph 04 | Ph 05 | Ph 06 |
 |---|---|---|---|---|---|---|
-| **P0** | SHELL-01/02/05, SET-01/02, PLAT-02 | SRC-01, HOME-01/02/04–07 (mock), EXP-01–08, LIB-01–08, SET-05 | SRC-02/03, LIB-09/10, NP-01–10/12/13, SHELL-04, SET-03/04/07, PLAT-01/06, HOME-03 | HOME-05–07 (history rules) | — | Fixes |
+| **P0** | SHELL-01/02/05, PLAT-02; SET-01/02 withdrawn (O8), replaced by the 014 visual identity | SRC-01, HOME-01/02/04–07 (mock), EXP-01–08, LIB-01–08, SET-05 | SRC-02/03, LIB-09/10, NP-01–10/12/13, SHELL-04, SET-03/04/07, PLAT-01/06, HOME-03 | HOME-05–07 (history rules) | — | Fixes |
 | **P1** | — | — | — | HOME-08/09, EXP-09 | NP-11/14/15, SHELL-03, LIB-11/12, SET-06, PLAT-03/04, SHELL-04 help | PLAT-05, items reprioritized from feedback |
 | **P2** | — | — | — | — | — | Not scheduled: SRC-04, EXP-10, LIB-13, NP-16/17, sync, Android |
 

@@ -1,6 +1,6 @@
 # Architecture
 
-> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05 · **Amended:** 2026-11-07 (O8: one permanent dark visual identity; SET-01 and SET-02 withdrawn)
 > **Owns:** stack decisions, layers and dependency rules, folder layout, domain model, state management, audio engine, persistence schema, routing, browser capability handling, error handling, decision log.
 > **Related:** [product-requirements.md](product-requirements.md) (feature IDs) · [provider-contract.md](provider-contract.md) (`MusicProvider`) · [testing/test-plan.md](testing/test-plan.md)
 
@@ -102,13 +102,13 @@ Rules:
 ```
 src/
   app/                          # Next routes only (thin)
-    layout.tsx                  # <html>, theme bootstrap, <AppShell>
+    layout.tsx                  # <html>, <AppShell> (no theme bootstrap: ADR-011)
     page.tsx                    # Home
     explore/…  library/…  settings/…
   presentation/
     components/ui/              # shadcn-generated primitives
     components/shell/           # Sidebar, BottomNav, AppShell, SkipLink, RouteFocus, PlayerDock (idle; 008 replaces its content)
-    components/settings/        # AppearanceSettings
+    components/settings/        # Settings sections (Appearance withdrawn by O8)
     components/player/          # MiniPlayer, NowPlaying, QueuePanel, SeekBar
     components/media/           # TrackRow, MediaCard, ArtworkImage, sections
     components/states/          # EmptyState, ErrorState, NothingHereYet, DelayedSkeleton, AsyncView, PlaceholderView, HoldGate
@@ -250,7 +250,7 @@ These are pure functions in `domain/recommendations/`. The inputs are play event
 |---|---|---|
 | `usePlayerStore` (Zustand) | `queue`, `playback`, the command methods | Snapshot to Dexie `playerSnapshot` (debounced 1 s, and on `pagehide`) |
 | `useUiStore` (Zustand) | `nowPlayingOpen`, `queuePanelOpen`, toasts, active dialog | None |
-| `useSettingsStore` (Zustand) | Theme, accent, playback preferences | Dexie `settings`. Theme and accent are also mirrored to `localStorage` for the pre-paint bootstrap (ADR-009) |
+| `useSettingsStore` (Zustand) | Playback preferences; the reduced-motion override (SET-06) | Dexie `settings`. There is no theme or accent setting and no `localStorage` mirror (O8, ADR-011) |
 | Library data | Playlists, likes, library items, tracks, recent searches | **Dexie, read with `useLiveQuery`**, not copied into Zustand (ADR-004) |
 
 - Components select narrow slices, for example `usePlayerStore(s => s.playback.status)`.
@@ -258,7 +258,7 @@ These are pure functions in `domain/recommendations/`. The inputs are play event
 
 ## 8. Routing and rendering
 
-- `app/layout.tsx` (a Server Component) renders `<html>`, the theme bootstrap and `<AppShell>` (a Client Component). `AppShell` owns:
+- `app/layout.tsx` (a Server Component) renders `<html>` and `<AppShell>` (a Client Component). `AppShell` owns:
   - the sidebar or bottom navigation
   - the player bar or mini player
   - the Now Playing overlay
@@ -422,4 +422,5 @@ D2 stores local audio in IndexedDB through Dexie. This is the policy for quota (
 | ADR-010 | **Accepted (D5).** The public display name comes from one constant, `APP_DISPLAY_NAME`, used in `<title>`, metadata, the manifest, About and export file names. | "Metrolist Web Reimagined" is an internal working title only, and third-party branding must never reach public UI. | A later rename touches one constant plus the icons. |
 | ADR-007 | No unofficial music sources | ToS, legal and breakage risk ([metrolist-audit.md §12](metrolist-audit.md#12-risks-of-unofficial-music-apis)). | Catalog is limited to mock, sample and owned files until a compliant provider exists. |
 | ADR-008 | Fixed Home section order | Predictability; lesson from the Metrolist audit. | Less sense of novelty. |
-| ADR-009 | Theme mirrored to `localStorage`, applied by a tiny inline script before paint | Prevents a light/dark flash, since IndexedDB is async. | Two copies of the theme setting; Dexie stays authoritative and rewrites the mirror. Confirmed (bundled `preventing-flash-before-hydration.md`); System resolved in CSS; Appearance selection shown from first paint via `<html>`-attribute CSS and a pre-hydration selection script (001 research R15). |
+| ADR-009 | **Superseded by ADR-011 (2026-11-07, O8).** Theme mirrored to `localStorage`, applied by a tiny inline script before paint | Prevents a light/dark flash, since IndexedDB is async. | Two copies of the theme setting; Dexie stays authoritative and rewrites the mirror. Confirmed (bundled `preventing-flash-before-hydration.md`); System resolved in CSS; Appearance selection shown from first paint via `<html>`-attribute CSS and a pre-hydration selection script (001 research R15). |
+| ADR-011 | **Accepted (O8, 2026-11-07).** One permanent dark visual identity (Abyss Copper, [design-system.md §2](design-system.md#2-color)), defined as static CSS tokens on `:root` with `color-scheme: dark`. No theme or accent setting, no pre-paint script, no `localStorage` mirror. Supersedes ADR-009. | Owner decision O8; constitution IX v2.0.0. Static CSS is correct from the first paint, so the no-flash criterion (UX-AC-10) needs no bootstrap. | Listeners who prefer a light UI have no option; forced-colours mode remains the high-contrast path (design-system §2.5). 014 removes the 001 appearance code and its stored values. |
