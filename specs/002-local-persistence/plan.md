@@ -54,7 +54,7 @@ Add the on-device store that every later feature saves into. The listener-visibl
 
 **Scale/Scope**:
 - Personal scale: thousands of items (ADR-005 revisits playlists above about 10k).
-- Five repositories built, eleven tables declared, one banner, one status store, one use case.
+- Five repositories built, twelve tables declared, one banner, one status store, one use case.
 
 No `NEEDS CLARIFICATION` remains: the spec's open decisions are D-002-5 and D-002-6, and every design unknown is resolved in [research.md](research.md) R1–R14. Two choices need explicit owner approval at G3: the ADR-004 amendment (R3) and the two new notice texts (R8).
 

@@ -72,10 +72,11 @@ test.describe('delayed skeleton (V18)', () => {
     await setTime(page, 149)
     expect(await opacity(page)).toBe('0')
     // Hidden from assistive technology too until the threshold.
-    await expect(page.getByRole('status')).toHaveCount(0)
+    // Scoped to the skeleton's own status region: the shell now always has an (empty) storage status region too (002).
+    await expect(page.getByRole('status').filter({ hasText: 'Loading' })).toHaveCount(0)
     await setTime(page, 150)
     expect(await opacity(page)).toBe('1')
-    await expect(page.getByRole('status')).toHaveText('Loading')
+    await expect(page.getByRole('status').filter({ hasText: 'Loading' })).toHaveText('Loading')
     expect((await samples(page)).some((s) => s.skeleton && s.empty)).toBe(false)
   })
 

@@ -28,10 +28,10 @@ The texts are module constants in `src/presentation/components/shell/StorageBann
 | Rule | Detail |
 |---|---|
 | Placement | First child of the content column inside `AppShell` `<main>`, in normal flow, before the page content. Never fixed or sticky; never covers content, navigation, sidebar or player dock |
-| Visibility | Rendered only when `notice !== null`. Nothing while `opening` without a notice, or `ready` |
-| Semantics | `role="status"` (polite live region). No `tabindex`, no link, button or other focusable descendant. Never receives focus |
+| Visibility | The visible box is rendered only when `notice !== null`; nothing is visible while `opening` without a notice, or `ready` |
+| Semantics | The `role="status"` (polite live region) element **is always present**, empty until a notice exists, so assistive technology registers it before text arrives (amended after the `/code-review`, 2026-11-07: a region inserted already filled is not reliably announced). No `tabindex`, no link, button or other focusable descendant. Never receives focus |
 | Content | An information icon (`aria-hidden`) and the text. Wraps at 320 px; no horizontal scroll |
-| Styling | Token utilities only: `bg-surface`, `border border-divider`, `text-text`, `rounded-md`. No new colour token |
+| Styling | Applied to the inner box. Token utilities only: `bg-surface`, `border border-divider`, `text-text`, `rounded-md`. No new colour token |
 | Persistence | Stays for the whole session once shown (no dismiss control), on every page, because it lives in the persistent shell |
 
 ## 4. Test oracles
@@ -40,7 +40,7 @@ The texts are module constants in `src/presentation/components/shell/StorageBann
 |---|---|---|
 | B-T1 | For each notice, the banner shows exactly the §2 text with `role="status"` | component |
 | B-T2 | The banner has no focusable descendants and no `tabindex` | component |
-| B-T3 | Nothing is rendered for `phase` `opening` or `ready` without a notice | component |
+| B-T3 | For `phase` `opening` or `ready` without a notice, the live region exists and is empty (no text, no box) | component |
 | B-T4 | `indexedDB` removed by an init script. **Functional:** the shell starts, all four destinations open, the `unavailable` banner is visible on each, no `pageerror`. **Performance (SC-003, separate assertion):** the banner's insertion time, measured in the page from navigation start, is below 1000 ms (see [research R10](../research.md#r10-e2e-mechanics-and-test-hooks-fr-024-sc-001-to-sc-003-sc-006-sc-007)) | E2E, six projects |
 | B-T5 | `mp-library` pre-created at a higher version: the `newer-version` banner shows, and after the page closes the database still has its original version and rows (FR-023) | E2E, six projects |
 | B-T6 | `indexedDB.open` delayed forever: the shell and navigation render and are usable; no banner (SC-007, edge case "Store opens slowly") | E2E, six projects |

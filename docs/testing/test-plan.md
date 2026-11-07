@@ -75,7 +75,9 @@ Tested under `fake-indexeddb`, with a stubbed `navigator.storage`. Cases:
 - Until samples exist, the test asserts that the directory is absent or empty, and that the "Play sample tracks" action is hidden.
 
 ### 3.6 Persistence and backup: UX-AC-12, UX-AC-13
-- Repository CRUD under `fake-indexeddb`.
+- Repository CRUD under `fake-indexeddb`. One **shared contract suite** (`tests/integration/storage-contract.ts`) runs against both backends, the Dexie store and the in-memory session fallback, so the fallback is proven to behave like the real store. It lives in the Vitest `integration` project (Node, `fake-indexeddb/auto`). Dexie-only cases cover rows that fail validation (skipped and logged), unknown fields kept on rewrite, the derived `tracks` columns, and a real IndexedDB failure rolling back a unit of work.
+- Lifecycle under `fake-indexeddb`: failure to open, loss mid-session, switch at most once, a blocked upgrade, an upgrade or deletion from another connection, an operation in flight during a switch, and data newer than the declared version left untouched.
+- E2E mechanics (002): the test hook `window.__STORAGE__` seeds and reads data and records what a `watch` delivers. Failures use real browser mechanisms, not hooks: `indexedDB` and its prefixed names removed, `indexedDB.open` never completing, and `mp-library` pre-created at a higher version from a same-origin page that runs no app code. A browser restart is a new context from `storageState({ indexedDB: true })`. Time budgets (SC-003, SC-006) are asserted separately from behaviour, from in-browser timestamps, and reported with the measured value; they are wall-clock measurements and not fully deterministic.
 - Each schema migration from fixture databases.
 - Backup round-trip: export, reset, import, export again, then compare with deep equality after normalizing the `exportedAt` timestamps.
 - Invalid backups are rejected with a specific `ImportError`.

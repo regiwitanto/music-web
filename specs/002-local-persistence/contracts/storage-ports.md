@@ -49,7 +49,7 @@ interface StorageUnitOfWork {
 }
 ```
 
-Inside `fn`, await only repository calls (research R4).
+Inside `fn`, await only repository calls (research R4). **`fn` may run twice:** if the device store becomes unavailable during the unit, the session switches to memory and `fn` is run again against it, so `fn` must have no effect other than its repository calls and must be safe to repeat (added after the `/code-review`, 2026-11-07).
 
 ## 4. The storage facade
 

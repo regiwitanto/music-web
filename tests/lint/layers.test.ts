@@ -111,3 +111,27 @@ describe('application and infrastructure', () => {
     ).toContain(RESTRICTED)
   })
 })
+
+describe('Dexie and zod are infrastructure only (002 plan phase 1; constitution VIII)', () => {
+  it('rejects a Dexie import in presentation', async () => {
+    expect(await ruleIds('src/presentation/fixture.tsx', "import Dexie from 'dexie'\nexport const d = Dexie\n")).toContain(RESTRICTED)
+  })
+
+  it('rejects a zod import in presentation', async () => {
+    expect(await ruleIds('src/presentation/fixture.tsx', "import { z } from 'zod'\nexport const s = z\n")).toContain(RESTRICTED)
+  })
+
+  it('rejects Dexie and zod imports in the application layer', async () => {
+    expect(await ruleIds('src/application/fixture.ts', "import Dexie from 'dexie'\nexport const d = Dexie\n")).toContain(RESTRICTED)
+    expect(await ruleIds('src/application/fixture.ts', "import { z } from 'zod'\nexport const s = z\n")).toContain(RESTRICTED)
+  })
+
+  it('rejects a zod import in the domain', async () => {
+    expect(await ruleIds('src/domain/fixture.ts', "import { z } from 'zod'\nexport const s = z\n")).toContain(RESTRICTED)
+  })
+
+  it('allows Dexie and zod in infrastructure', async () => {
+    expect(await ruleIds('src/infrastructure/fixture.ts', "import Dexie from 'dexie'\nexport const d = Dexie\n")).not.toContain(RESTRICTED)
+    expect(await ruleIds('src/infrastructure/fixture.ts', "import { z } from 'zod'\nexport const s = z\n")).not.toContain(RESTRICTED)
+  })
+})

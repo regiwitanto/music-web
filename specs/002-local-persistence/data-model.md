@@ -75,7 +75,7 @@ Capacity: the last 200 entries (ring buffer). Not persisted in 002; feature 013 
 | `opening` | upgrade blocked by another tab | `opening` | `blocked-upgrade` | none yet (waits) |
 | `opening` (blocked) | other tab closes | `ready` | cleared | Dexie |
 | `opening` | availability failure | `unavailable` | `unavailable` | Memory (empty) |
-| `opening` | `VersionError` (newer data) | `unavailable` | `newer-version` | Memory (empty); the database is not touched |
+| `opening` | stored version newer than the declared one, detected before opening (or `VersionError`) | `unavailable` | `newer-version` | Memory (empty); the database is not opened or touched |
 | `ready` | an operation fails with `UNAVAILABLE` | `unavailable` | `unavailable` | Memory (empty) |
 | `ready` | `versionchange` from a newer tab (`newVersion` > current): event `upgraded-elsewhere` | `unavailable` | `stale-tab` | Memory (empty); connection closed |
 | `ready` | `versionchange` with `newVersion = null` (deleted elsewhere): event `deleted-elsewhere` | `unavailable` | `unavailable` | Memory (empty); connection closed |

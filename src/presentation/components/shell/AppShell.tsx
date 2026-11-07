@@ -2,16 +2,19 @@
 
 import { type ReactNode, useEffect, useRef, useState } from 'react'
 import { container } from '@/application/container'
+import { startStorage } from '@/application/storage-lifecycle'
 import { useMediaQuery } from '@/presentation/hooks/useMediaQuery'
 import { TooltipProvider } from '@/presentation/components/ui/tooltip'
 import { cn } from '@/presentation/lib/cn'
 import { TestFault } from '@/presentation/testing/TestFault'
 import { recordShellMount } from '@/presentation/testing/shell-mounts'
+import { installStorageHooks } from '@/presentation/testing/storage-hooks'
 import { BottomNav } from './BottomNav'
 import { PlayerDock } from './PlayerDock'
 import { RouteFocus } from './RouteFocus'
 import { Sidebar } from './Sidebar'
 import { SkipLink } from './SkipLink'
+import { StorageBanner } from './StorageBanner'
 
 type NavKind = 'sidebar' | 'bottom'
 
@@ -28,6 +31,15 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // Test-only mount counter (ui-shell.md §7.1); a no-op in normal builds.
   useEffect(() => recordShellMount('shell'), [])
+
+  // Open the device store after the shell has mounted, never before first paint (002 research R7).
+  // `startStorage` is idempotent and never throws, so StrictMode's second effect run is harmless.
+  useEffect(() => {
+    void startStorage()
+  }, [])
+
+  // Test-only storage hook (002 FR-024); a no-op in normal builds.
+  useEffect(() => installStorageHooks(), [])
 
   // 014 FR-019: the identity is static, so the theme and accent value that the 001 version
   // saved on the device is obsolete. Remove it once after mount; it is never read and the
@@ -117,7 +129,10 @@ export function AppShell({ children }: { children: ReactNode }) {
           tabIndex={-1}
           className="pb-[calc(var(--bottom-nav-h)+var(--safe-bottom))] md:pb-[calc(var(--dock-h)+var(--safe-bottom))] md:pl-(--sidebar-w)"
         >
-          <div className="mx-auto w-full max-w-[1600px] px-4 py-6 md:px-6 lg:px-8">{children}</div>
+          <div className="mx-auto w-full max-w-[1600px] px-4 py-6 md:px-6 lg:px-8">
+            <StorageBanner />
+            {children}
+          </div>
         </main>
         <PlayerDock />
       </div>

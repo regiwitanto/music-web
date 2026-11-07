@@ -54,6 +54,7 @@ The owner may defer a manual verification (constitution v1.1.0, Development Work
 |---|---|---|---|---|
 | 001 T106, manual screen-reader pass (SC-009, G10), with VoiceOver on macOS **and** iOS, **plus** NVDA or TalkBack | Owner, 2026-11-06 (proposal QG-A1) | Full assistive-technology testing is not feasible at this stage of the personal project | Phase 06 closed-beta deployment ([roadmap](roadmap.md)) | **Deferred** |
 | 014 T036 / SC-005, real Windows High Contrast check (forced-colours mode, G10 and G11), in Edge or Chrome with Windows High Contrast turned on | Owner, 2026-11-07 (clarification D-014-2; recorded at G13) | Automated Chromium forced-colours emulation is judged sufficient for G13 of 014; testing on a real Windows High Contrast system is postponed | Phase 06 closed-beta preparation ([roadmap](roadmap.md)) | **Deferred** |
+| 002 banner announcement, manual screen-reader check that the storage banner's `role="status"` text is announced when it appears (G10; done together with the 001 T106 pass, same assistive technology) | Owner, 2026-11-08 ("I accept 002, record G13 and the deferrals") | The banner's live region is covered by automated checks only; a real screen reader needs the same setup as 001 T106 | Phase 06 closed-beta deployment, with 001 T106 ([roadmap](roadmap.md)) | **Deferred** |
 
 ## 2. Gate status by feature
 
@@ -253,3 +254,52 @@ Evidence for finding 2: before the fix, the first two new tests failed 6 of 6 (C
    - define the `danger` button variant's hover and pressed tokens when the first danger action is built;
    - retire the `mp.appearance` cleanup (`ObsoleteDataCleaner`) at Phase 06 (002 builds no settings store, per its D-002-5);
    - set the manifest and browser `theme_color` to `#101B23` in 012 (PLAT-03).
+
+### 002-local-persistence
+
+| Gate | Status | Evidence |
+|---|---|---|
+| G1 Specification review | **Passed** 2026-11-07 | Owner approval, 2026-11-07, after clarifications D-002-1, D-002-5 (settings area defined only) and D-002-6 (neutral banner wording). [spec.md](../specs/002-local-persistence/spec.md); [checklists/requirements.md](../specs/002-local-persistence/checklists/requirements.md) |
+| G2 AC completeness | **Passed** 2026-11-07 | With G1; `/speckit-analyze` coverage table |
+| G3 Plan approval | **Passed** 2026-11-07 | Owner approval. [plan.md](../specs/002-local-persistence/plan.md), [research.md](../specs/002-local-persistence/research.md), [contracts/](../specs/002-local-persistence/contracts/). New dependencies Dexie and zod (justified in architecture §2, notices in `THIRD_PARTY_NOTICES.md`); `dexie-react-hooks` not adopted (ADR-004 amended) |
+| G4 Task breakdown | **Passed** 2026-11-07 | Owner approval. [tasks.md](../specs/002-local-persistence/tasks.md): 47 tasks. `/speckit-analyze`: 0 CRITICAL; findings U1, M1 to M5 and L1 to L5 remediated by an owner-approved documentation amendment |
+| G5 TypeScript | **Passed** 2026-11-07 | `pnpm typecheck` exit 0 on the final tree |
+| G6 Lint | **Passed** 2026-11-07 | `pnpm lint` exit 0, including the extended layer tests (dexie and zod only in `src/infrastructure/`) |
+| G7 Unit | **Passed** 2026-11-07 | `pnpm test:coverage`: 29 files, 367 tests passed (baseline 16 files, 210); `src/domain/**` 100% lines, 96.29% branches (threshold 90%) |
+| G8 Integration | **Passed** 2026-11-07 | Included in the 367: the shared contract suite on the Dexie backend (fake-indexeddb) and the in-memory backend, Dexie-only cases, lifecycle tests, migrations tests, component tests |
+| G9 E2E | **Passed** 2026-11-07 (002 scope) | Full `pnpm test:e2e`, six projects, `workers: 2`, test-hooks build, final tree after the review fixes: **638 passed, 0 failed, 166 skipped** (7.3 min; baseline 566/0/166). 001's open G9 residual risks (gaps 3, 5, 6) are unchanged and not closed. The timing budgets (SC-003 banner under 1 s, SC-006 cross-tab under 1 s) are asserted separately from behaviour and are single wall-clock measurements, not deterministic |
+| G10 Accessibility | **Automated: Passed · Manual SR pass: Deferred (001 T106, now including the banner announcement)** 2026-11-07 | axe, 0 serious or critical issues with the banner shown on all seven routes; Tab never enters the banner (B-T7); no horizontal scroll at 320 px. No manual screen-reader pass was performed |
+| G11 Visual review | **Passed** 2026-11-08 on the owner's acceptance | 40 Chromium screenshots re-captured on the final tree (live-region fix included) in [review/](../specs/002-local-persistence/review/): four notices × `/` and `/settings` × 320, 375, 768, 1024, 1440 px. `unavailable` and `newer-version` came from real failures; `blocked-upgrade` and `stale-tab` through the test hook `showNotice`. Scripted checks passed on all 40 (role, inside viewport, not covered, no horizontal scroll, one status region). The owner did not itemise what was reviewed. **Not covered:** Firefox, WebKit, real devices, a real screen reader |
+| G12 Regression | **Passed** 2026-11-07 | The full G5 to G10 runs above are on the final tree; 001 and 014 behaviour still passes (two skeleton assertions in `states.spec.ts` were scoped, see exception 2) |
+| CI | **Not run; no waiver recorded for 002** | The repository still has no remote. Local runs: typecheck, lint, 367 tests, full E2E 638/0/166, normal `pnpm build` exit 0, `pnpm scan:branding` OK (176 source files, 348 compiled files). See open obligation 1 |
+| G13 Feature review | **Passed** 2026-11-08 | Owner approval, 2026-11-08: "I accept 002, record G13 and the deferrals". Accepted with the exceptions in the [acceptance record](#002-g13-acceptance-record). `/code-review` (ten findings: seven fixed, two as designed, one not changed) is dispositioned in [tasks.md](../specs/002-local-persistence/tasks.md) |
+
+#### 002 G13 acceptance record
+
+**Status: G13 approved by the owner, 2026-11-08.** 002-local-persistence is accepted with the exceptions below. It delivers the Dexie/IndexedDB store (database `mp-library`, schema v1, twelve tables, five repositories built), the in-memory session fallback, the status banner, the lifecycle and the migrations guard. Deferred items remain open obligations; nothing here records a test that was not performed.
+
+**Deferred items** (owner, 2026-11-08; see the [register](#deferral-of-manual-verifications))
+- **Banner announcement by a real screen reader:** Deferred, not Passed; due with 001 T106 before the Phase 06 closed-beta deployment. Automated evidence that still passes: the banner is an always-present, initially empty `role="status"` region (B-T3), axe reports 0 serious or critical issues, Tab never enters it. Residual risk: whether VoiceOver, NVDA or TalkBack announce the inserted text is unconfirmed.
+- **Carried, unchanged:** 001 T106 (manual screen-reader pass) and 014 T036 (real Windows High Contrast check). 002 performed neither.
+
+**Exceptions and deviations accepted with this approval**
+1. **Contract deviation (review finding 6):** oracle B-T3 changed from "nothing is rendered when there is no notice" to "an empty `role="status"` region exists", so screen readers can announce the text. contracts/storage-status.md §3 and §4 and research R11 are updated.
+2. **001 assertions scoped:** two skeleton assertions in `tests/e2e/states.spec.ts` now target the "Loading" status region, because the banner's region is always present. Behaviour is unchanged.
+3. **In-memory unit of work does not isolate concurrent units:** a write from another call site during an in-flight unit is rolled back with it. Documented in `memory-storage.ts`; the fallback has one user and short units.
+4. **Review finding 10 not changed:** the unavailable-error allow-list was not widened (no evidence from a real browser; risk of hiding programming errors).
+5. **Dexie 4 newer-data behaviour:** Dexie 4 opens and re-upgrades a newer database instead of raising VersionError (observed: version 50 became 51). The store reads the stored version before opening and refuses newer data; the first open is guarded and Dexie's auto-open is off (research R7, R8 and data-model §6 corrected).
+6. **Timing budgets (SC-003, SC-006)** are single wall-clock measurements (cross-tab delivery 4 to 21 ms; banner insertion 46 to 445 ms), not deterministic proof.
+7. **G11 images for `blocked-upgrade` and `stale-tab` come from the test hook**, not from real blocked or stale-tab events (those paths are covered by the lifecycle tests).
+
+**Owner decision:** G13 approved, 2026-11-08.
+
+**Open obligations after acceptance**
+1. **CI:** no remote and no waiver for 002 (001's waiver covered 001 only; its condition 4 applies the "and in CI" clause from 002 onward). The owner is asked to confirm whether local runs stand in for CI for 002, or to leave the item open until a remote exists, when the first CI run is recorded against the 001, 014 and 002 gates.
+2. **001 T106** and the **002 banner announcement**, before the Phase 06 beta deployment.
+3. **014 real Windows High Contrast check**, before the Phase 06 closed-beta preparation.
+4. **G11:** other browsers and real devices were not reviewed.
+5. **Follow-ups proposed (not 002 scope):**
+   - widen the unavailable-error list when a real failure is observed (finding 10);
+   - build the first view hook (`useSyncExternalStore` over a `Watchable`) with the first consuming feature;
+   - settings read and write in feature 010;
+   - retire `ObsoleteDataCleaner` at Phase 06.

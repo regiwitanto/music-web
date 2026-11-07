@@ -111,7 +111,7 @@ This **amends ADR-004** ("read through Dexie `useLiveQuery`"): the reads still c
 | Raised by Dexie or the browser | Reported as (`StorageError`) |
 |---|---|
 | `QuotaExceededError` | `QUOTA_EXCEEDED` |
-| `VersionError` (the database is newer than this version) | `VERSION_CONFLICT` with reason `newer-version` |
+| `VersionError`, or the stored version found to be newer before opening (see below) | `VERSION_CONFLICT` with reason `newer-version` |
 | `OpenFailedError`, `DatabaseClosedError`, `SecurityError`, `InvalidStateError`, `UnknownError`, `MissingAPIError` (no `indexedDB`) | `UNAVAILABLE` |
 | Anything else (`ConstraintError`, `DataError`, `TypeError`...) | Not a storage error: these are caller or programming errors, they are rethrown unchanged and caught by tests |
 
@@ -128,7 +128,7 @@ FR-019 ("reported as the storage error kinds, never as unhandled errors") is rea
 - **Older tab (the one that is told to stop).** Dexie raises `versionchange` when a newer tab upgrades. The handler closes the connection, switches this tab to memory mode, and emits `upgraded-elsewhere` (notice `stale-tab`): this tab stops writing (FR-022).
 - **Deleted elsewhere.** A `versionchange` with `newVersion === null` means the database is being deleted, for example by a future "reset all data" (010) in another tab. It is reported as `deleted-elsewhere` and shows the `unavailable` notice, not `stale-tab`, whose text ("out of date") would be untrue.
 - **Newer tab (the one waiting).** While another tab keeps the old version open, the upgrade is `blocked`. The handler sets notice `blocked-upgrade`. When the other tab closes or reloads, the open continues and the notice clears.
-- **Newer data.** `VersionError` at open means stored data is from a newer app version (a rollback). The store is not touched. The app switches to memory mode with notice `newer-version` (FR-023).
+- **Newer data.** Stored data from a newer app version (a rollback) is never touched. **Correction found in implementation (T037):** Dexie 4 does not raise `VersionError` for a database newer than the version declared; it opens it and upgrades it again to add its missing tables, which would modify exactly the data FR-023 protects. So `DexieStorage.open()` first reads the stored IndexedDB version with `indexedDB.databases()` (which opens and creates nothing) and reports `VERSION_CONFLICT` with reason `newer-version` when it is higher than the declared version times ten, before Dexie sees the database. A real `VersionError` is still mapped the same way. The app switches to memory mode with notice `newer-version`. Browsers without `indexedDB.databases()` are outside the supported set (D4) and skip the check.
 - **Notice texts**. Three texts are new and are fixed in [contracts/storage-status.md](contracts/storage-status.md) (**needs owner approval at G3**, and UX §7 is amended in the same change):
   - `blocked-upgrade`: "A newer version is ready, but another tab is still open. Close the other tab or reload it to finish updating."
   - `stale-tab`: "This tab is out of date and has stopped saving. Reload this page to continue."
@@ -168,7 +168,7 @@ Determinism: an injected `Clock` and `IdGenerator` (ports, with fixed fakes); no
 
 ## R11. The banner (FR-017; Story 2 scenario 4)
 
-**Decision**: `StorageBanner` is rendered inside `AppShell` as the first child of the content column, in normal flow (not fixed), so it can never cover content or the navigation. It has `role="status"` (a polite live region), no tabindex, no links or buttons, an information icon and the notice text, and uses token utilities only (`bg-surface`, `border-divider`, `text-text`). It wraps at 320 px. It renders nothing while `phase` is `opening` or `ready` and no notice is set.
+**Decision**: `StorageBanner` is rendered inside `AppShell` as the first child of the content column, in normal flow (not fixed), so it can never cover content or the navigation. Its `role="status"` element (a polite live region) is **always present and empty** until a notice exists, and the visible box (an information icon and the notice text, token utilities only: `bg-surface`, `border-divider`, `text-text`) appears inside it; there is no tabindex and no link or button. It wraps at 320 px. Nothing is visible while `phase` is `opening` or `ready` and no notice is set. (Amended after the `/code-review`: a live region inserted already filled is not reliably announced.)
 
 **Rationale**: In flow is the only placement that cannot overlap the player dock, the bottom navigation or the sidebar; the skip link and focus rules of 001 are untouched because the banner is not focusable. The live region announces the text once when it appears.
 

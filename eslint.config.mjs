@@ -23,7 +23,7 @@ const noParentRelative = {
 
 const domainPatterns = [
   {
-    group: ["react", "react-*", "react/*", "next", "next/*", "zustand", "zustand/*", "dexie", "dexie*"],
+    group: ["react", "react-*", "react/*", "next", "next/*", "zustand", "zustand/*", "dexie", "dexie*", "zod", "zod/*"],
     message: "The domain layer must stay pure: no UI framework, state library or storage.",
   },
   {
@@ -34,11 +34,18 @@ const domainPatterns = [
   noParentRelative,
 ];
 
+// Dexie and zod belong to infrastructure (002 plan phase 1; constitution VIII).
+const noStorageLibraries = {
+  group: ["dexie", "dexie/*", "zod", "zod/*"],
+  message: "Dexie and zod are infrastructure only: reach storage through the application ports.",
+};
+
 const applicationPatterns = (allowInfrastructure) => [
   {
     group: ["@/presentation/*", "@/presentation/**", "@/app/*", "@/app/**"],
     message: "The application layer may not depend on presentation or routes.",
   },
+  noStorageLibraries,
   ...(allowInfrastructure
     ? []
     : [
@@ -79,6 +86,7 @@ const uiPatterns = [
     group: ["@/infrastructure/*", "@/infrastructure/**"],
     message: "Presentation and routes may not import infrastructure.",
   },
+  noStorageLibraries,
   noTestImports,
   noParentRelative,
 ];
