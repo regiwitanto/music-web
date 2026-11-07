@@ -1,6 +1,6 @@
 # Design System
 
-> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05 · **Amended:** 2026-11-07 (O8: one permanent dark visual identity; SET-01 and SET-02 withdrawn)
+> **Status:** Phase 00 draft · **Last reviewed:** 2026-11-05 · **Amended:** 2026-11-07 (O8: one permanent dark visual identity; SET-01 and SET-02 withdrawn; 014: derived tokens validated)
 > **Owns:** visual principles, tokens (colour, type, spacing, shape, elevation, motion), iconography, artwork rules, the component inventory, and how tokens are implemented in Tailwind v4.
 > **Related:** layouts and behaviour in [ux-specification.md](ux-specification.md) · the visual identity is fixed; the theme and accent settings SET-01 and SET-02 are withdrawn (O8, [product-requirements.md](product-requirements.md#55-settings-set))
 
@@ -20,34 +20,52 @@ Direction rules:
 - No pure black (`#000000`) backgrounds, no neon or highly saturated accents, no glow effects, and no large copper-coloured surfaces. Copper fills are limited to small controls (the primary play button, slider fill, selection marks).
 - WCAG 2.2 AA contrast, visible keyboard focus and forced-colours support are required (§2.4, §2.5).
 
-### 2.1 Approved palette
+### 2.1 Palette and derived tokens
 
-This is the **approved design direction, not yet a validated token system**. The remaining semantic tokens are derived during feature 014 planning.
+**Validated token system** (feature 014, 2026-11-07). The five approved values were fixed by owner decisions K1 and K2. The other values were derived in the 014 plan ([research R2](../specs/014-visual-identity/research.md)). All are declared once in the `:root` block of `src/app/globals.css`, and `tests/unit/tokens-contrast.test.ts` checks every ratio below from that file.
 
-| Role | Token | Value |
-|---|---|---|
-| Page background | `--bg` | `#101B23` |
-| Surface (sidebar, player bar, cards) | `--surface` | `#182731` |
-| Primary accent, **Muted Copper** | `--accent` | `#D8AD88` |
-| Primary text, icons | `--text` | `#E8EDF0` |
-| Secondary text, metadata | `--text-muted` | `#A9B9C1` |
+| Role | Token | Value | Source |
+|---|---|---|---|
+| Page background | `--bg` | `#101B23` | Approved (K1/K2) |
+| Surface (sidebar, player bar, cards) | `--surface` | `#182731` | Approved |
+| Primary accent, **Muted Copper** | `--accent` | `#D8AD88` | Approved |
+| Primary text, icons | `--text` | `#E8EDF0` | Approved |
+| Secondary text, metadata | `--text-muted` | `#A9B9C1` | Approved |
+| Raised surface (menus, dialogs, tooltips, skip link) | `--raised` | `#213441` | Derived |
+| Strong border (inputs, control outlines) | `--border-strong` | `#7F98A7` | Derived |
+| Divider (decorative) | `--divider` | `#2A3D49` | Derived |
+| Danger | `--danger` | `#F2949A` | Derived |
+| Text and icons on an accent fill | `--on-accent` | `#101B23` | Derived |
+| Accent hover / pressed | `--accent-hover` / `--accent-pressed` | `#E2BD9C` / `#C99B73` | Derived |
+| Hover overlay | `--overlay-hover` | `--text` at 6% | Derived |
+| Pressed overlay | `--overlay-pressed` | `--text` at 10% | Derived |
+| Selected background | `--overlay-selected` | `--accent` at 12% | Derived |
+| Now Playing scrim | `--scrim` | `--bg` at 85% | Derived (§2.3) |
+| Overlay shadow | `--shadow-overlay` | `0 8px 24px rgb(0 0 0 / 0.45)` | Derived (§5) |
 
-**To be derived in the 014 plan** (not decided here): `--raised`; `--border-strong` (≥ 3:1 against `--bg` and every surface); `--divider`; `--danger` (clearly distinguishable from copper, and never shown by colour alone); `--on-accent`; accent hover and pressed shades; the hover, pressed and selected overlays; the focus-ring colour and offset; the Now Playing scrim colour (§2.3). The plan records each value with its computed contrast, and this section is then updated.
+Translucent tokens are written `color-mix(in srgb, var(<base>) <N>%, transparent)`.
 
-**Computed contrast of the approved values**
+Direction rules still apply: no pure black (`#000000`) backgrounds, no neon or highly saturated accents, no glow, and no large copper surfaces.
 
-Calculated with the WCAG 2.x relative-luminance formula on 2026-11-07. They must be recalculated whenever a value changes.
+**Computed contrast** (WCAG 2.x relative luminance, 2026-11-07; overlays composited with half-up rounding as browsers do)
 
 | Pair | Ratio | Requirement |
 |---|---|---|
-| text / bg | 14.80 | ≥ 4.5 |
-| text / surface | 12.96 | ≥ 4.5 |
-| text-muted / bg | 8.64 | ≥ 4.5 |
-| text-muted / surface | 7.57 | ≥ 4.5 |
-| accent / bg | 8.52 | ≥ 4.5 as text; ≥ 3.0 as a UI component or focus indicator |
-| accent / surface | 7.47 | same |
-| bg on accent (candidate `--on-accent`) | 8.52 | ≥ 4.5 |
+| text / bg · surface · raised | 14.80 · 12.96 · 10.91 | ≥ 4.5 |
+| text-muted / bg · surface · raised | 8.64 · 7.57 · 6.37 | ≥ 4.5 |
+| accent / bg · surface · raised | 8.52 · 7.47 · 6.28 | ≥ 4.5 as text; ≥ 3.0 as a UI component or focus indicator |
+| danger / bg · surface · raised | 7.88 · 6.90 · 5.81 | ≥ 4.5 |
+| border-strong / bg · surface · raised | 5.78 · 5.06 · 4.26 | ≥ 3.0 |
+| border-strong / pressed overlay over raised (`#354753`) | 3.19 | ≥ 3.0 |
+| on-accent / accent · accent-hover · accent-pressed | 8.52 · 9.97 · 7.00 | ≥ 4.5 |
+| text / pressed overlay over bg · surface · raised | 11.40 · 9.78 · 8.18 | ≥ 4.5 |
+| text-muted / pressed overlay over raised | 4.77 | ≥ 4.5 |
+| accent / selected overlay over bg · surface · raised | 6.81 · 5.92 · 4.97 | ≥ 4.5 |
 | surface / bg | 1.14 | none: a layer step only. A boundary that carries meaning also needs `--border-strong` |
+| raised / bg · surface | 1.36 · 1.19 | none: a layer cue only (§5) |
+| divider / surface · bg | 1.36 · 1.55 | none: decorative only |
+
+`--danger` is close to copper in luminance (1.08:1) and differs by hue only, so danger is always shown with an icon or text, never by colour alone.
 
 The 001 Light, Dark and OLED Black tables and the 8 accent presets are withdrawn with SET-01 and SET-02. Their values remain in git history and in the 001 artifacts.
 
@@ -57,27 +75,37 @@ One fixed accent: **Muted Copper `#D8AD88`**. There is no user-selectable accent
 
 ### 2.3 Now Playing scrim
 
-The artwork background (NP-04) is the artwork blurred at 64 px, saturated ×1.2, with a **70% black scrim** on top.
+The artwork background (NP-04) is the artwork blurred at 64 px, saturated ×1.2, with the **`--scrim`** on top: `--bg` at 85%. The scrim is tinted toward the page background, not black, so the expanded player stays inside the identity.
 
-On the worst case (pure white artwork) this gives:
-- primary text `#F2F2F5`: **7.57:1**
-- secondary text, `#F2F2F5` at 80% opacity: **5.54:1**
+On the worst case (pure white artwork, composite `#343D44`):
+- primary text `--text`: **9.38:1**
+- secondary text, `--text` at 80% opacity: **6.69:1**
+- `--text-muted`: **5.48:1**
+- `--accent`: **5.40:1**
 
-The ratios above were computed for the 001 text value `#F2F2F5`. The 014 plan recalculates them with `--text` `#E8EDF0` and decides whether the scrim stays black or is tinted toward `--bg` (it is an overlay on artwork, not a page background). The expanded player uses the identity's text tokens. Making the scrim strength depend on sampled luminance is P1, together with NP-15.
+85% is the lowest bg-tinted strength at which every identity text role passes on white artwork (70% black fails `--text-muted` at 4.18 and `--accent` at 4.13; 80% bg fails `--accent` at 4.49). The expanded player (feature 008) uses the identity's text tokens. Making the scrim strength depend on sampled luminance is P1, together with NP-15.
 
 ### 2.4 State colours
 
 | State | Treatment |
 |---|---|
-| Hover | Hover overlay: `--text` at 6% |
-| Pressed | Pressed overlay: `--text` at 10% |
-| Selected row | Accent at 12% background, plus accent text for the title |
+| Hover | `--overlay-hover` (`--text` at 6%). On an accent fill: `--accent-hover` |
+| Pressed | `--overlay-pressed` (`--text` at 10%). On an accent fill: `--accent-pressed` |
+| Selected row | `--overlay-selected` (accent at 12%) background, plus accent text for the title |
 | Disabled | 40% opacity, and `aria-disabled` |
-| Focus ring | 2 px solid accent with a 2 px offset in `--bg` (accent / bg 8.52, accent / surface 7.47, §2.1). The final treatment is confirmed in the 014 plan |
+| Focus ring | 2 px solid accent with a 2 px offset in `--bg` (accent / bg 8.52, accent / surface 7.47, accent / raised 6.28; §2.1). Confirmed by 014. On a copper-filled control the ring sits 2 px outside the fill, so it is never directly on copper |
 
 ### 2.5 Forced colours
 
-In forced-colours mode (for example Windows High Contrast), the browser's system colours replace the identity. Content, state (active navigation item, selection, pressed toggles, disabled controls) and focus indicators MUST stay visible: state is never shown by colour or background alone, and focus uses an outline that the forced palette keeps. 001 already ships a forced-colours fallback in `globals.css`; 014 verifies it against the new identity.
+In forced-colours mode (for example Windows High Contrast), the browser's system colours replace the identity. Content, state (active navigation item, selection, pressed toggles, disabled controls) and focus indicators MUST stay visible: state is never shown by colour or background alone, and focus uses an outline that the forced palette keeps.
+
+All rules are in one `@media (forced-colors: active)` block in `globals.css` (014 research R9). They only add borders, so nothing changes outside the mode:
+- the current navigation item gets a `2px solid Highlight` marker (a left border in the sidebar, a top border in the bottom bar), besides its filled icon;
+- skeleton blocks get a `1px solid CanvasText` border;
+- the primary (accent-filled) button gets a `1px solid ButtonText` border;
+- focus needs no rule, because the outline survives.
+
+Verified by automated Chromium emulation (014 D-014-2). Real Windows High Contrast is Deferred to Phase 06 closed-beta preparation.
 
 ## 3. Typography
 
@@ -115,7 +143,7 @@ The font is **Geist Sans**, already loaded via `next/font` in `src/app/layout.ts
 | `radius-art` | 8 px (2 px for 40 px thumbnails) | Album artwork |
 | `radius-full` | 9999 px | Artist images (circles), play button, avatar tiles |
 
-**Elevation** uses colour steps (`bg` → `surface` → `raised`). Because surface / bg is only 1.14:1, an element that must read as a separate layer (menus, dialogs) also gets a `--divider` border or a soft dark shadow. The exact treatment is derived in the 014 plan. No glow. (The 001 light-theme shadow tokens are withdrawn.)
+**Elevation** uses colour steps (`bg` → `surface` → `raised`). Because surface / bg is only 1.14:1, an element that must read as a separate layer (tooltips, the skip link, menus, dialogs) uses `bg-raised`, a 1 px `--divider` border and `--shadow-overlay`. A control whose edge carries meaning (an input, the secondary button) uses `--border-strong`. No glow. (The 001 light-theme shadow tokens `shadow-1` and `shadow-2` are withdrawn.)
 
 ## 6. Motion
 

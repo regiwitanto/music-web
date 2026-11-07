@@ -53,6 +53,7 @@ The owner may defer a manual verification (constitution v1.1.0, Development Work
 | Item | Approved | Reason | Due before | Status |
 |---|---|---|---|---|
 | 001 T106, manual screen-reader pass (SC-009, G10), with VoiceOver on macOS **and** iOS, **plus** NVDA or TalkBack | Owner, 2026-11-06 (proposal QG-A1) | Full assistive-technology testing is not feasible at this stage of the personal project | Phase 06 closed-beta deployment ([roadmap](roadmap.md)) | **Deferred** |
+| 014 T036 / SC-005, real Windows High Contrast check (forced-colours mode, G10 and G11), in Edge or Chrome with Windows High Contrast turned on | Owner, 2026-11-07 (clarification D-014-2; recorded at G13) | Automated Chromium forced-colours emulation is judged sufficient for G13 of 014; testing on a real Windows High Contrast system is postponed | Phase 06 closed-beta preparation ([roadmap](roadmap.md)) | **Deferred** |
 
 ## 2. Gate status by feature
 
@@ -196,3 +197,59 @@ Evidence for finding 2: before the fix, the first two new tests failed 6 of 6 (C
 2. **CI:** when a remote is added, record the first CI run against the 001 gates; G9 gap 6 closes only after a green CI run.
 3. **G9 residual risks** (gaps 1, 2, 3, 5) stay documented; a recurrence reopens the gap.
 
+### 014-visual-identity
+
+| Gate | Status | Evidence |
+|---|---|---|
+| G1 Specification review | **Passed** 2026-11-07 | Owner approval, 2026-11-07, after clarifications D-014-1 (Settings rows) and D-014-2 (forced-colours verification). [spec.md](../specs/014-visual-identity/spec.md); checklist 16/16: [checklists/requirements.md](../specs/014-visual-identity/checklists/requirements.md) |
+| G2 AC completeness | **Passed** 2026-11-07 | With G1. FR→scenario/SC mapping in the spec; `/speckit-analyze` coverage table: 31 of 31 requirements covered |
+| G3 Plan approval | **Passed** 2026-11-07 | Owner approval, 2026-11-07, including doc amendments 1–7 and additions (a) to (c). [plan.md](../specs/014-visual-identity/plan.md), [research.md](../specs/014-visual-identity/research.md) R1–R11, [contracts/](../specs/014-visual-identity/contracts/). No new dependency |
+| G4 Task breakdown | **Passed** 2026-11-07 | Owner approval, 2026-11-07. [tasks.md](../specs/014-visual-identity/tasks.md): 38 tasks. `/speckit-analyze`: 0 CRITICAL, 0 HIGH; the 4 MEDIUM and 2 of the LOW findings were remediated by an owner-approved documentation amendment (2026-11-07) |
+| G5 TypeScript | **Passed** 2026-11-07 | `pnpm typecheck` exit 0 |
+| G6 Lint | **Passed** 2026-11-07 | `pnpm lint` exit 0, including `tests/lint/layers.test.ts` (fixtures moved to the new `ObsoleteDataCleaner` modules) |
+| G7 Unit | **Passed** 2026-11-07 | `pnpm test:coverage`: 16 files, 210 tests passed; `src/domain/**` 100% lines, 95.83% branches (threshold 90%). The token-contrast test checks every identity pair (113 cases with the no-raw-colours test) |
+| G8 Integration | **Passed** 2026-11-07 | Included in the 210 tests: component tests for the `AppShell` cleanup (I-T7) and `SettingsSectionList` (S-T1 to S-T3) |
+| G9 E2E | **Passed** 2026-11-07 (014 scope) | Full `pnpm test:e2e`, six projects, `workers: 2`, test-hooks build, on the final tree after the `/code-review` fix: **566 passed, 0 failed, 166 skipped** (732 tests, 4.8 min). The skips are by design (desktop-only, mobile-only, and the forced-colours block outside Chromium per D-014-2). Before the review fix: 564/0/162. Baseline before 014: 465/0/159. 001's open G9 residual risks (gaps 3, 5, 6) are unchanged and not closed by this run; no flake occurred in the 014 runs |
+| G10 Accessibility | **Automated: Passed · Manual SR pass: Deferred (001, unchanged) · Real high-contrast check: Deferred (D-014-2)** 2026-11-07 | Automated: axe, 0 serious or critical issues on `/`, `/explore`, `/library`, `/settings`, `/library/liked`, `/settings/x1`, `/radio` × 6 projects, with `color-contrast` on; keyboard and focus (2 px copper outline at every Tab stop, including on the copper-filled Retry button). The forced-colours scan runs Chromium-only with the `color-contrast` rule off (see the exceptions below). The manual screen-reader pass was not performed by 014 |
+| G11 Visual review | **Passed** 2026-11-07 on the owner's acceptance | The owner's acceptance of 014 (G13), 2026-11-07. 38 Chromium screenshots were captured by the agent in [review/](../specs/014-visual-identity/review/) (six screens at 320, 375, 768, 1024 and 1440 px, plus four screens in forced colours at 390 and 1440 px, with the system colour scheme emulated as light). The owner did not itemise what was reviewed. **Not performed or not confirmed:** the recovery screen capture (it needs the test hooks), a real OS light-appearance reload, a real-browser forced-colours session |
+| G12 Regression | **Passed** 2026-11-07 | The full G5 to G10 runs above are on the merged tree. 001's behaviour outside its withdrawn Story 4 still passes (E2E nav, routes, states, dock, branding; 001's theme tests were removed with SET-01 and SET-02, not failed) |
+| CI | **Not run; no waiver recorded for 014** | The repository still has no remote. The 001 waiver was granted "for G13 of 001 only"; the owner's acceptance of 014 does not mention CI. Local runs: typecheck, lint, 210 unit tests, full E2E 566/0/166, normal `pnpm build` exit 0, `pnpm scan:branding` OK (157 source files, 348 compiled files). See open obligation 2 |
+| G13 Feature review | **Passed** 2026-11-07 | Owner approval, 2026-11-07: "I accept 014, record G13 and the deferral". Accepted with the exceptions in the [acceptance record](#014-g13-acceptance-record). `/code-review` findings are dispositioned in [tasks.md](../specs/014-visual-identity/tasks.md#implementation-notes-2026-11-07) (one fix, two follow-ups proposed) |
+
+#### 014 G13 acceptance record
+
+**Status: G13 approved by the owner, 2026-11-07.** 014-visual-identity is accepted with the exceptions below. It replaces 001's theme and accent system (SET-01 and SET-02, Withdrawn by O8) with the single dark identity Abyss Copper (ADR-011, constitution IX v2.0.0). Nothing here records a test the owner or the agent did not perform; deferred items remain open obligations.
+
+**Deferred item** (owner, 2026-11-07; see the [register](#deferral-of-manual-verifications))
+- **Real Windows High Contrast check:** Deferred, not Passed. Due before the Phase 06 closed-beta preparation. Automated evidence that still passes for the same behaviour: Chromium forced-colours emulation (active-item marker, outline at every Tab stop, skeleton and primary-button borders, axe with `color-contrast` off) on all four destinations and the reserved and Not Found pages, on both desktop and mobile projects. Residual risks while deferred:
+  1. Real system-colour mapping (Windows High Contrast Black, White and custom themes) can differ from Chromium's emulation of forced colours.
+  2. Whether the `Highlight` marker on the current navigation item, the `CanvasText` skeleton borders and the `ButtonText` button border are legible against real themes.
+  3. Whether icons (drawn with `currentColor`) stay visible in every real theme.
+  4. Firefox and Safari were not tested in forced-colours mode at all (the other projects skip that block).
+  5. Constitution IX ("forced-colours mode MUST be honoured") is verified only by emulation until that pass.
+
+**Evidence required to record the real high-contrast pass when it is done:**
+1. Date of the pass.
+2. Windows version, the high-contrast theme or themes used, browser and version (Edge or Chrome).
+3. For `/`, `/explore`, `/library`, `/settings`, `/library/liked` and `/radio`: the current navigation item is distinguishable, the focus outline is visible at every Tab stop, skeleton blocks (use the loading state) and the primary Retry button have a visible edge, the Settings rows are readable, and no text or icon disappears.
+4. Any deviation, with the page and theme where it occurred.
+
+**Exceptions and deviations accepted with this approval** (each was presented to the owner before acceptance)
+1. **A derived colour differs from the approved plan.** `--border-strong` is `#7F98A7`, not `#7A93A2`: with the half-up rounding browsers use, the plan's value measured 2.995:1 on a pressed control over a raised surface, below the 3:1 minimum (FR-010). Recorded in [research R2](../specs/014-visual-identity/research.md), [contracts/identity.md](../specs/014-visual-identity/contracts/identity.md), [design-system §2.1](design-system.md#21-palette-and-derived-tokens) and the plan. The five approved palette values are unchanged.
+2. **The forced-colours axe scan runs with `color-contrast` off** (task T030(e)). In forced-colours mode the browser paints the user's system colours and axe judges the author colours (303 false findings, all `color-contrast`). The identity's contrast is covered by the token-contrast unit test and by the normal-mode axe scan, which keeps the rule on. All other axe rules were scanned and report 0 serious or critical issues.
+3. **Test-first order was not followed for one component test.** `tests/component/AppShell.test.tsx` (I-T7) was written but first run after its implementation existed. The other new tests were run failing first: the token test on the old CSS, `SettingsSectionList.test.tsx` on a missing import, and `identity.spec.ts` against the baseline build (32 of 38 failed on chromium-desktop).
+4. **Scope additions the owner approved at G3 (a) to (c):** accent hover and pressed tokens and overlay utilities; forced-colours borders on the primary button and skeletons; the settings store deleted rather than kept empty for 010. Also made without being named in a task: the `ghost` button variant moved to the overlay tokens.
+
+**Owner decision:** G13 approved, 2026-11-07.
+
+**Open obligations after acceptance**
+1. **Real Windows High Contrast check**, before the Phase 06 closed-beta preparation (the deferral above).
+2. **CI:** the repository still has no remote, and no waiver is recorded for 014 (001's waiver covered 001 only; its condition 4 applies the "and in CI" clause from feature 002 onward). The owner is asked to confirm whether local runs stand in for CI for 014, or to leave the item open until a remote exists, when the first CI run is recorded against the 014 and 001 gates.
+3. **T106** (001's manual screen-reader pass): unchanged, still due before the Phase 06 beta deployment. 014 did not perform it.
+4. **G11 manual steps not performed or confirmed:** the recovery screen capture, a real OS light-appearance reload, a real-browser forced-colours session. Optional: quickstart V10.
+5. **002 reconciliation:** when 002 resumes, it reconciles its superseded clarifications D-002-2 and the appearance half of D-002-3 (014 does not edit the 002 spec).
+6. **Follow-ups proposed (not 014 scope):**
+   - give `global-error.tsx` the font variable classes (a gap that predates 014);
+   - define the `danger` button variant's hover and pressed tokens when the first danger action is built;
+   - retire the `mp.appearance` cleanup (`ObsoleteDataCleaner`) with 002's settings store or at Phase 06;
+   - set the manifest and browser `theme_color` to `#101B23` in 012 (PLAT-03).

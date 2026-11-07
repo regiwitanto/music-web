@@ -1,6 +1,7 @@
 'use client'
 
 import { type ReactNode, useEffect, useRef, useState } from 'react'
+import { container } from '@/application/container'
 import { useMediaQuery } from '@/presentation/hooks/useMediaQuery'
 import { TooltipProvider } from '@/presentation/components/ui/tooltip'
 import { cn } from '@/presentation/lib/cn'
@@ -11,7 +12,6 @@ import { PlayerDock } from './PlayerDock'
 import { RouteFocus } from './RouteFocus'
 import { Sidebar } from './Sidebar'
 import { SkipLink } from './SkipLink'
-import { ThemeSync } from './ThemeSync'
 
 type NavKind = 'sidebar' | 'bottom'
 
@@ -28,6 +28,13 @@ export function AppShell({ children }: { children: ReactNode }) {
 
   // Test-only mount counter (ui-shell.md §7.1); a no-op in normal builds.
   useEffect(() => recordShellMount('shell'), [])
+
+  // 014 FR-019: the identity is static, so the theme and accent value that the 001 version
+  // saved on the device is obsolete. Remove it once after mount; it is never read and the
+  // call never throws.
+  useEffect(() => {
+    container.obsoleteData.removeObsoleteAppearance()
+  }, [])
 
   // Breakpoint focus handoff (R3): when the element holding focus becomes hidden by a
   // breakpoint, move focus to the current (or first) item of the navigation that is still
@@ -100,7 +107,6 @@ export function AppShell({ children }: { children: ReactNode }) {
         data-sidebar={sidebarCollapsed ? 'collapsed' : 'expanded'}
         className={cn('[--sidebar-w:72px]', !sidebarCollapsed && 'lg:[--sidebar-w:240px]')}
       >
-        <ThemeSync />
         <TestFault shell />
         <SkipLink />
         <RouteFocus />

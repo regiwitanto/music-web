@@ -123,14 +123,14 @@ The order is fixed, top to bottom. A section with no data is **hidden**, except 
 ### 4.4 Settings (`/settings`)
 A single scrollable page with grouped sections and a sticky in-page section index on desktop. Every change takes effect immediately; there is no Save button.
 
-There is **no Appearance section**: the app has one permanent dark visual identity and no theme or accent choice (O8; SET-01 and SET-02 withdrawn). The reduced-motion override lives in **Accessibility** and appears when SET-06 ships.
+There is **no Appearance section**: the app has one permanent dark visual identity and no theme or accent choice (O8; SET-01 and SET-02 withdrawn). The reduced-motion override lives in **Accessibility** and appears when SET-06 ships. The sections appear in the order of the table below (owner decision D-014-1, 2026-11-07); until a section ships, Settings lists it as a non-interactive "Coming soon" row (014 FR-017).
 
 | Section | Controls | ID |
 |---|---|---|
-| Accessibility | Reduced motion override: System / On / Off (P1) | SET-06 |
 | Playback | Remember shuffle & repeat; Restore queue on launch; Default volume (hidden on iOS) | SET-03 |
 | Storage | See §4.5 | SET-07, PLAT-06 |
 | Library & Data | Export backup; Import backup (confirm replace); Reset all data (type "RESET" to confirm) | SET-04 |
+| Accessibility | Reduced motion override: System / On / Off (P1) | SET-06 |
 | About | Public display name (`APP_DISPLAY_NAME`; never "Metrolist" or any third-party brand, per D5), version and build hash; **Sample music credits** (the full attribution line for each track, [provider-contract.md §9.3](provider-contract.md#93-sampleprovider-sample--src-03)); provider attributions; open-source licenses; privacy statement ("All data stays in this browser") | SET-05 |
 
 ### 4.5 Storage management (SET-07, PLAT-06)

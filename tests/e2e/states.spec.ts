@@ -5,7 +5,6 @@ import {
   freezeSkeletonAnimations,
   readMounts,
   releaseHold,
-  seedAppearance,
   setFaults,
   test,
   waitForHydration,
@@ -131,13 +130,12 @@ test.describe('page failure (V19)', () => {
 })
 
 test.describe('whole-app failure (V20)', () => {
-  test('recovery screen in the stored theme, Reload starts a new document', async ({ page }) => {
-    await seedAppearance(page, JSON.stringify({ v: 1, theme: 'dark', accent: 'violet' }))
+  test('recovery screen in the identity, Reload starts a new document', async ({ page }) => {
     await setFaults(page, { __shell__: { mode: 'throw' } })
     await page.goto('/')
     await expect(page.getByRole('heading', { level: 1, name: 'Something went wrong' })).toBeVisible()
     await expect(page.getByText('The app ran into a problem.')).toBeVisible()
-    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(18, 18, 20)')
+    expect(await page.evaluate(() => getComputedStyle(document.body).backgroundColor)).toBe('rgb(16, 27, 35)')
     expect(await page.locator('body').innerText()).not.toMatch(/Injected test fault|digest|at \w+/i)
 
     await page.getByRole('button', { name: 'Reload' }).click()

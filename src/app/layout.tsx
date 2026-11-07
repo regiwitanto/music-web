@@ -1,6 +1,6 @@
-import type { Metadata } from 'next'
+import type { Metadata, Viewport } from 'next'
 import { Geist, Geist_Mono } from 'next/font/google'
-import { APP_DISPLAY_NAME, buildThemeBootstrapScript } from '@/application/shell'
+import { APP_DISPLAY_NAME } from '@/application/shell'
 import { AppShell } from '@/presentation/components/shell/AppShell'
 import './globals.css'
 
@@ -22,22 +22,18 @@ export const metadata: Metadata = {
   description: 'Play and organise your music.',
 }
 
-// Built once per server start from domain constants (research R4).
-const themeBootstrap = buildThemeBootstrapScript()
+// One permanent dark identity (ADR-011): the browser's canvas and native controls are dark
+// before the stylesheet arrives. The same declaration is in globals.css (014 research R1).
+export const viewport: Viewport = {
+  colorScheme: 'dark',
+}
 
 export default function RootLayout({ children }: LayoutProps<'/'>) {
   return (
     <html
       lang="en"
-      data-theme="system"
-      data-accent="violet"
-      suppressHydrationWarning
       className={`${geistSans.variable} ${geistMono.variable} antialiased`}
     >
-      <head>
-        {/* First child of <head>: applies the persisted theme before first paint (ADR-009). */}
-        <script dangerouslySetInnerHTML={{ __html: themeBootstrap }} />
-      </head>
       <body>
         <AppShell>{children}</AppShell>
       </body>

@@ -13,12 +13,11 @@ type TestWindow = Window & {
   __TEST_FAULTS__?: Record<string, Fault>
   __TEST_RELEASE__?: (key: string) => void
   __SHELL_MOUNTS__?: { shell: number; sidebar: number; bottomNav: number; dock: number }
-  __THEME_LOG__?: Array<{ attr: string; value: string | null; hasBody: boolean }>
   __SKELETON_ANIMATION__?: Animation
 }
 
-/** Writes `raw` to localStorage['mp.appearance'] before any page script runs. */
-export async function seedAppearance(page: Page, raw: string): Promise<void> {
+/** Seeds the obsolete 001 value localStorage['mp.appearance'] before any page script runs (014 data-model §2). */
+export async function seedObsoleteAppearance(page: Page, raw: string): Promise<void> {
   await page.addInitScript((value) => {
     window.localStorage.setItem('mp.appearance', value)
   }, raw)
@@ -41,29 +40,6 @@ export async function breakStorage(page: Page): Promise<void> {
       },
     }
     Object.defineProperty(window, 'localStorage', { configurable: true, get: () => throwing })
-  })
-}
-
-/** Records every data-theme / data-accent value set on <html> (exposed as __THEME_LOG__). */
-export async function recordThemeAttributes(page: Page): Promise<void> {
-  await page.addInitScript(() => {
-    const w = window as TestWindow
-    const log: NonNullable<TestWindow['__THEME_LOG__']> = []
-    w.__THEME_LOG__ = log
-    new MutationObserver((records) => {
-      for (const r of records) {
-        if (r.target !== document.documentElement || !r.attributeName) continue
-        log.push({
-          attr: r.attributeName,
-          value: document.documentElement.getAttribute(r.attributeName),
-          hasBody: document.body !== null,
-        })
-      }
-    }).observe(document, {
-      attributes: true,
-      subtree: true,
-      attributeFilter: ['data-theme', 'data-accent'],
-    })
   })
 }
 
@@ -141,9 +117,11 @@ export async function readMounts(page: Page): Promise<TestWindow['__SHELL_MOUNTS
   return page.evaluate(() => (window as TestWindow).__SHELL_MOUNTS__)
 }
 
-/** Runs axe and returns only serious and critical violations. */
-export async function axeScan(page: Page) {
-  const results = await new AxeBuilder({ page }).analyze()
+/** Runs axe and returns only serious and critical violations. `disableRules` turns rules off by id. */
+export async function axeScan(page: Page, options: { disableRules?: string[] } = {}) {
+  const builder = new AxeBuilder({ page })
+  if (options.disableRules) builder.disableRules(options.disableRules)
+  const results = await builder.analyze()
   return results.violations.filter((v) => v.impact === 'serious' || v.impact === 'critical')
 }
 

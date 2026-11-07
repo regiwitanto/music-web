@@ -1,9 +1,11 @@
 @import "tailwindcss";
 
 /*
- * Design tokens (docs/design-system.md §2–6; 001 research R11; contracts/theme.md §4).
+ * Design tokens: the one permanent dark visual identity, "Abyss Copper"
+ * (docs/design-system.md §2; 014 research R2 to R5; ADR-011; constitution IX v2.0.0).
  * This file is the single source of truth for colour. Components use only the
- * semantic utilities mapped in @theme below, never raw colours (FR-023).
+ * semantic utilities mapped in @theme below, never raw colours (FR-023 of 001, FR-003 of 014).
+ * There is no theme or accent choice, and nothing here reads the system colour scheme.
  */
 
 /* Tailwind's default palette is removed, so palette classes such as `zinc-500`
@@ -12,83 +14,36 @@
   --color-*: initial;
 }
 
-/* ---------- Neutral tokens per theme (design-system §2.1) ---------- */
-
-:root[data-theme="light"],
-:root[data-theme="system"] {
-  color-scheme: light;
-  --bg: #FFFFFF;
-  --surface: #F4F4F6;
-  --raised: #FFFFFF;
-  --text: #111114;
-  --text-muted: #5B5B66;
-  --border-strong: #8A8A96;
-  --divider: #E4E4E8;
-  --danger: #C42B2B;
-  --accent: var(--accent-l);
-  --on-accent: var(--on-accent-l);
-}
-
-:root[data-theme="dark"] {
-  color-scheme: dark;
-  --bg: #121214;
-  --surface: #1B1B1F;
-  --raised: #25252A;
-  --text: #F2F2F5;
-  --text-muted: #A3A3AD;
-  --border-strong: #6E6E78;
-  --divider: #2A2A2F;
-  --danger: #F87171;
-  --accent: var(--accent-d);
-  --on-accent: var(--on-accent-d);
-}
-
-:root[data-theme="oled"] {
-  color-scheme: dark;
-  --bg: #000000;
-  --surface: #0E0E10;
-  --raised: #1A1A1D;
-  --text: #F2F2F5;
-  --text-muted: #A3A3AD;
-  --border-strong: #6A6A73;
-  --divider: #1C1C1F;
-  --danger: #F87171;
-  --accent: var(--accent-d);
-  --on-accent: var(--on-accent-d);
-}
-
-/* System follows the OS live, with no JavaScript (FR-022). These values must equal
-   the Dark block above; the token-contrast test checks that they do. */
-@media (prefers-color-scheme: dark) {
-  :root[data-theme="system"] {
-    color-scheme: dark;
-    --bg: #121214;
-    --surface: #1B1B1F;
-    --raised: #25252A;
-    --text: #F2F2F5;
-    --text-muted: #A3A3AD;
-    --border-strong: #6E6E78;
-    --divider: #2A2A2F;
-    --danger: #F87171;
-    --accent: var(--accent-d);
-    --on-accent: var(--on-accent-d);
-  }
-}
-
-/* ---------- Accent inputs (design-system §2.2) ---------- */
-
-:root[data-accent="violet"] { --accent-l: #6D3FE0; --on-accent-l: #FFFFFF; --accent-d: #A78BFA; --on-accent-d: #111114; }
-:root[data-accent="blue"]   { --accent-l: #1F5FD6; --on-accent-l: #FFFFFF; --accent-d: #7AA7FF; --on-accent-d: #111114; }
-:root[data-accent="teal"]   { --accent-l: #0B7C78; --on-accent-l: #FFFFFF; --accent-d: #2DD4BF; --on-accent-d: #111114; }
-:root[data-accent="green"]  { --accent-l: #1F7A35; --on-accent-l: #FFFFFF; --accent-d: #4ADE80; --on-accent-d: #111114; }
-:root[data-accent="amber"]  { --accent-l: #A15C00; --on-accent-l: #FFFFFF; --accent-d: #FBBF24; --on-accent-d: #111114; }
-:root[data-accent="orange"] { --accent-l: #C2410C; --on-accent-l: #FFFFFF; --accent-d: #FB923C; --on-accent-d: #111114; }
-:root[data-accent="rose"]   { --accent-l: #C0265B; --on-accent-l: #FFFFFF; --accent-d: #FB7199; --on-accent-d: #111114; }
-:root[data-accent="red"]    { --accent-l: #C42B2B; --on-accent-l: #FFFFFF; --accent-d: #F87171; --on-accent-d: #111114; }
-
-/* ---------- Non-colour tokens ---------- */
+/* ---------- Identity tokens (one block; contracts/identity.md §1) ---------- */
 
 :root {
+  color-scheme: dark;
+
+  /* Approved palette (owner decisions K1/K2, 2026-11-07). */
+  --bg: #101B23;
+  --surface: #182731;
+  --accent: #D8AD88;
+  --text: #E8EDF0;
+  --text-muted: #A9B9C1;
+
+  /* Derived in the 014 plan (research R2). Contrast is checked by tests/unit/tokens-contrast.test.ts. */
+  --raised: #213441;
+  --border-strong: #7F98A7;
+  --divider: #2A3D49;
+  --danger: #F2949A;
+  --on-accent: #101B23;
+  --accent-hover: #E2BD9C;
+  --accent-pressed: #C99B73;
+
+  /* State overlays and the Now Playing scrim (research R2, R3). */
+  --overlay-hover: color-mix(in srgb, var(--text) 6%, transparent);
+  --overlay-pressed: color-mix(in srgb, var(--text) 10%, transparent);
+  --overlay-selected: color-mix(in srgb, var(--accent) 12%, transparent);
+  --scrim: color-mix(in srgb, var(--bg) 85%, transparent);
+
+  /* Separated layers: menus, dialogs, tooltips (research R5). No glow. */
+  --shadow-overlay: 0 8px 24px rgb(0 0 0 / 0.45);
+
   /* Shell dimensions (ui-shell.md §3; design-system §4). */
   --sidebar-w: 240px;
   --dock-h: 80px;
@@ -105,9 +60,9 @@
   --motion-art: 400ms;
   --motion-art-ease: ease-in-out;
 
-  /* shadcn/ui aliases (design-system §10), so generated components inherit the
-     themes. shadcn's `muted` and `accent` stay CSS-only: as Tailwind colours they
-     would clash with this project's `text-muted` and brand `accent` utilities. */
+  /* shadcn/ui aliases (design-system §10), so generated components inherit the identity.
+     shadcn's `muted` and `accent` stay CSS-only: as Tailwind colours they would clash with
+     this project's `text-muted` and brand `accent` utilities. */
   --background: var(--bg);
   --foreground: var(--text);
   --primary: var(--accent);
@@ -135,7 +90,13 @@
   --color-divider: var(--divider);
   --color-danger: var(--danger);
   --color-accent: var(--accent);
+  --color-accent-hover: var(--accent-hover);
+  --color-accent-pressed: var(--accent-pressed);
   --color-on-accent: var(--on-accent);
+  --color-overlay-hover: var(--overlay-hover);
+  --color-overlay-pressed: var(--overlay-pressed);
+  --color-overlay-selected: var(--overlay-selected);
+  --color-scrim: var(--scrim);
 
   /* shadcn aliases that do not clash with the semantic names. */
   --color-background: var(--background);
@@ -183,10 +144,6 @@
   --radius-lg: 16px;
   --radius-art: 8px;
 
-  /* Elevation, used in Light (design-system §5). */
-  --shadow-1: 0 1px 2px rgb(0 0 0 / 0.06), 0 1px 3px rgb(0 0 0 / 0.08);
-  --shadow-2: 0 8px 24px rgb(0 0 0 / 0.12);
-
   /* Tooltip fade (motion-fast). */
   --animate-tooltip-in: tooltip-in var(--motion-fast) var(--motion-fast-ease);
 
@@ -198,6 +155,11 @@
       opacity: 1;
     }
   }
+}
+
+/* Elevation for separated layers (research R5); pair with a divider border. */
+@utility shadow-overlay {
+  box-shadow: var(--shadow-overlay);
 }
 
 /* ---------- Base ---------- */
@@ -225,7 +187,7 @@
     }
   }
 
-  /* Focus ring (FR-029; design-system §2.4): 2 px accent outline, 2 px offset in --bg. */
+  /* Focus ring (FR-029; design-system §2.4; 014 research R4): 2 px accent outline, 2 px offset. */
   :focus-visible {
     outline: 2px solid var(--accent);
     outline-offset: 2px;
@@ -267,64 +229,6 @@
   }
 }
 
-/* ---------- Appearance controls (R15 layer 1) ----------
-   The selected indicator is drawn from the <html> attributes, not from :checked,
-   so it is correct from first paint, before any script or hydration. */
-
-@layer components {
-  .appearance-option input {
-    appearance: none;
-    margin: 0;
-    flex-shrink: 0;
-    width: 20px;
-    height: 20px;
-    border-radius: 9999px;
-    border: 2px solid var(--border-strong);
-    background: transparent;
-    cursor: pointer;
-  }
-  .appearance-swatch {
-    display: inline-block;
-    flex-shrink: 0;
-    width: 28px;
-    height: 28px;
-    border-radius: 9999px;
-    border: 1px solid var(--border-strong);
-  }
-  [data-option-theme="light"] .appearance-swatch { background: linear-gradient(135deg, #FFFFFF 50%, #111114 50%); }
-  [data-option-theme="dark"] .appearance-swatch { background: linear-gradient(135deg, #121214 50%, #F2F2F5 50%); }
-  [data-option-theme="oled"] .appearance-swatch { background: linear-gradient(135deg, #000000 50%, #F2F2F5 50%); }
-  [data-option-theme="system"] .appearance-swatch { background: linear-gradient(135deg, #FFFFFF 50%, #121214 50%); }
-  [data-option-accent="violet"] { --sw-l: #6D3FE0; --sw-d: #A78BFA; }
-  [data-option-accent="blue"] { --sw-l: #1F5FD6; --sw-d: #7AA7FF; }
-  [data-option-accent="teal"] { --sw-l: #0B7C78; --sw-d: #2DD4BF; }
-  [data-option-accent="green"] { --sw-l: #1F7A35; --sw-d: #4ADE80; }
-  [data-option-accent="amber"] { --sw-l: #A15C00; --sw-d: #FBBF24; }
-  [data-option-accent="orange"] { --sw-l: #C2410C; --sw-d: #FB923C; }
-  [data-option-accent="rose"] { --sw-l: #C0265B; --sw-d: #FB7199; }
-  [data-option-accent="red"] { --sw-l: #C42B2B; --sw-d: #F87171; }
-  [data-option-accent] .appearance-swatch { background: var(--sw-l); }
-  :root[data-theme="dark"] [data-option-accent] .appearance-swatch,
-  :root[data-theme="oled"] [data-option-accent] .appearance-swatch { background: var(--sw-d); }
-  @media (prefers-color-scheme: dark) { :root[data-theme="system"] [data-option-accent] .appearance-swatch { background: var(--sw-d); } }
-  :root[data-theme="light"] [data-option-theme="light"] input,
-  :root[data-theme="dark"] [data-option-theme="dark"] input,
-  :root[data-theme="oled"] [data-option-theme="oled"] input,
-  :root[data-theme="system"] [data-option-theme="system"] input,
-  :root[data-accent="violet"] [data-option-accent="violet"] input,
-  :root[data-accent="blue"] [data-option-accent="blue"] input,
-  :root[data-accent="teal"] [data-option-accent="teal"] input,
-  :root[data-accent="green"] [data-option-accent="green"] input,
-  :root[data-accent="amber"] [data-option-accent="amber"] input,
-  :root[data-accent="orange"] [data-option-accent="orange"] input,
-  :root[data-accent="rose"] [data-option-accent="rose"] input,
-  :root[data-accent="red"] [data-option-accent="red"] input
-  {
-    border-color: var(--accent);
-    background: radial-gradient(circle, var(--accent) 0 5px, transparent 6px);
-  }
-}
-
 /* ---------- Delayed skeleton (R9, FR-035) ---------- */
 @keyframes reveal {
   to {
@@ -341,29 +245,29 @@
   }
 }
 
-/* Forced colors (Windows High Contrast): the UA strips author backgrounds, so keep
-   the swatches and draw the selected radio with system colours. */
+/* ---------- Forced colours (Windows High Contrast; 014 research R9, FR-014) ----------
+   The UA strips author backgrounds and replaces colours with system colours, so state that
+   relied on colour or background alone gets a border. Focus needs no rule: the outline
+   survives. Nothing here applies outside forced-colours mode. */
 @media (forced-colors: active) {
-  .appearance-option input,
-  .appearance-swatch {
-    forced-color-adjust: none;
+  /* Every nav link reserves the marker's width, so the current item does not shift its own
+     content against its siblings. */
+  [data-testid="sidebar"] ul a {
+    border-left: 2px solid transparent;
   }
-  .appearance-option input {
-    border-color: CanvasText;
+  [data-testid="bottom-nav"] a {
+    border-top: 2px solid transparent;
   }
-  :root[data-theme="light"] [data-option-theme="light"] input,
-  :root[data-theme="dark"] [data-option-theme="dark"] input,
-  :root[data-theme="oled"] [data-option-theme="oled"] input,
-  :root[data-theme="system"] [data-option-theme="system"] input,
-  :root[data-accent="violet"] [data-option-accent="violet"] input,
-  :root[data-accent="blue"] [data-option-accent="blue"] input,
-  :root[data-accent="teal"] [data-option-accent="teal"] input,
-  :root[data-accent="green"] [data-option-accent="green"] input,
-  :root[data-accent="amber"] [data-option-accent="amber"] input,
-  :root[data-accent="orange"] [data-option-accent="orange"] input,
-  :root[data-accent="rose"] [data-option-accent="rose"] input,
-  :root[data-accent="red"] [data-option-accent="red"] input {
-    border-color: Highlight;
-    background: radial-gradient(circle, Highlight 0 5px, transparent 6px);
+  [data-testid="sidebar"] [aria-current="page"] {
+    border-left: 2px solid Highlight;
+  }
+  [data-testid="bottom-nav"] [aria-current="page"] {
+    border-top: 2px solid Highlight;
+  }
+  [data-slot="skeleton"] {
+    border: 1px solid CanvasText;
+  }
+  .btn-primary-fc {
+    border: 1px solid ButtonText;
   }
 }

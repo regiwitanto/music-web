@@ -50,7 +50,7 @@ describe('presentation and routes', () => {
     expect(
       await ruleIds(
         'src/presentation/fixture.tsx',
-        "import { LocalStorageAppearanceRepository } from '@/infrastructure/platform/appearance-storage'\nexport const r = LocalStorageAppearanceRepository\n",
+        "import { LocalStorageObsoleteDataCleaner } from '@/infrastructure/platform/obsolete-data'\nexport const r = LocalStorageObsoleteDataCleaner\n",
       ),
     ).toContain(RESTRICTED)
   })
@@ -71,14 +71,14 @@ describe('presentation and routes', () => {
     expect(
       await ruleIds(
         'src/app/fixture.tsx',
-        "import { InMemoryAppearanceRepository } from '@/test/fakes/InMemoryAppearanceRepository'\nexport const f = InMemoryAppearanceRepository\n",
+        "import { RecordingObsoleteDataCleaner } from '@/test/fakes/RecordingObsoleteDataCleaner'\nexport const f = RecordingObsoleteDataCleaner\n",
       ),
     ).toContain(RESTRICTED)
   })
 
   it('rejects parent-relative imports that could bypass the layer rules', async () => {
     expect(
-      await ruleIds('src/presentation/fixture.tsx', "import { x } from '../infrastructure/platform/document-theme'\nexport const y = x\n"),
+      await ruleIds('src/presentation/fixture.tsx', "import { x } from '../infrastructure/platform/obsolete-data'\nexport const y = x\n"),
     ).toContain(RESTRICTED)
   })
 })
@@ -92,19 +92,19 @@ describe('application and infrastructure', () => {
 
   it('rejects an application file other than container.ts importing infrastructure', async () => {
     expect(
-      await ruleIds('src/application/fixture.ts', "import { x } from '@/infrastructure/platform/document-theme'\nexport const y = x\n"),
+      await ruleIds('src/application/fixture.ts', "import { x } from '@/infrastructure/platform/obsolete-data'\nexport const y = x\n"),
     ).toContain(RESTRICTED)
   })
 
   it('allows container.ts to import infrastructure', async () => {
     expect(
-      await ruleIds('src/application/container.ts', "import { x } from '@/infrastructure/platform/document-theme'\nexport const y = x\n"),
+      await ruleIds('src/application/container.ts', "import { x } from '@/infrastructure/platform/obsolete-data'\nexport const y = x\n"),
     ).not.toContain(RESTRICTED)
   })
 
   it('allows infrastructure to import types from application ports, and nothing else', async () => {
     expect(
-      await ruleIds('src/infrastructure/fixture.ts', "import type { AppearanceRepository } from '@/application/ports'\nexport type R = AppearanceRepository\n"),
+      await ruleIds('src/infrastructure/fixture.ts', "import type { ObsoleteDataCleaner } from '@/application/ports'\nexport type R = ObsoleteDataCleaner\n"),
     ).not.toContain(RESTRICTED)
     expect(
       await ruleIds('src/infrastructure/fixture.ts', "import { container } from '@/application/container'\nexport const c = container\n"),

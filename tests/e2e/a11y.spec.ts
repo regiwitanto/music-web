@@ -1,4 +1,4 @@
-import { axeScan, expect, isVisuallyHidden, movePointerAway, noHorizontalScroll, openCollapsedSidebar, readMounts, seedAppearance, test, waitForHydration } from './fixtures'
+import { axeScan, expect, isVisuallyHidden, movePointerAway, noHorizontalScroll, openCollapsedSidebar, readMounts, test, waitForHydration } from './fixtures'
 
 /*
  * Story 3 — keyboard and screen-reader users can do everything
@@ -70,65 +70,12 @@ test.describe('landmarks', () => {
 
 test.describe('axe scans (V8)', () => {
   const PATHS = ['/', '/explore', '/library', '/settings', '/library/liked', '/settings/x1', '/radio']
-  const APPEARANCES = [
-    { name: 'light', raw: JSON.stringify({ theme: 'light', accent: 'violet' }) },
-    { name: 'dark', raw: JSON.stringify({ theme: 'dark', accent: 'violet' }) },
-    { name: 'oled', raw: JSON.stringify({ theme: 'oled', accent: 'violet' }) },
-  ]
-  for (const appearance of APPEARANCES) {
-    test(`no serious or critical issues in ${appearance.name}`, async ({ page }) => {
-      await seedAppearance(page, appearance.raw)
-      for (const path of PATHS) {
-        await page.goto(path)
-        await waitForHydration(page)
-        expect(await axeScan(page), path).toEqual([])
-      }
-    })
-  }
-})
-
-test.describe('settings by keyboard (V7, SC-002)', () => {
-  test('Dark and Teal are selectable with the keyboard alone', async ({ page, hasTouch }) => {
-    test.skip(hasTouch, 'Keyboard flow')
-    await page.setViewportSize({ width: 1440, height: 900 })
-    await page.goto('/')
-    await waitForHydration(page)
-    const attr = (name: string) => page.evaluate((n) => document.documentElement.getAttribute(n), name)
-    const focusOutline = () => page.evaluate(() => getComputedStyle(document.activeElement as Element).outlineStyle)
-    const settings = page.getByRole('navigation', { name: 'Main' }).getByRole('link', { name: 'Settings' })
-    for (let i = 0; i < 10 && !(await settings.evaluate((el) => el === document.activeElement)); i += 1) {
-      await page.keyboard.press('Tab')
+  test('no serious or critical issues on the identity (I-T9)', async ({ page }) => {
+    for (const path of PATHS) {
+      await page.goto(path)
+      await waitForHydration(page)
+      expect(await axeScan(page), path).toEqual([])
     }
-    await expect(settings).toBeFocused()
-    expect(await focusOutline()).not.toBe('none')
-    await page.keyboard.press('Enter')
-    await expect(page.getByRole('heading', { level: 1, name: 'Settings' })).toBeFocused()
-
-    const select = async (group: 'theme' | 'accent', target: string) => {
-      const radios = page.locator(`input[name="${group}"]`)
-      await page.keyboard.press('Tab')
-      for (let i = 0; i < 20; i += 1) {
-        if (await radios.evaluateAll((els) => els.includes(document.activeElement as HTMLInputElement))) break
-        await page.keyboard.press('Tab')
-      }
-      expect(await focusOutline()).not.toBe('none')
-      for (let i = 0; i < 8; i += 1) {
-        const value = await page.evaluate(() => (document.activeElement as HTMLInputElement).value)
-        if (value === target) break
-        await page.keyboard.press('ArrowDown')
-        const now = await page.evaluate(() => (document.activeElement as HTMLInputElement).value)
-        // Applied immediately: <html> already matches the newly checked radio.
-        expect(await attr(`data-${group}`)).toBe(now)
-      }
-      expect(await attr(`data-${group}`)).toBe(target)
-    }
-    await select('theme', 'dark')
-    await select('accent', 'teal')
-    await page.reload()
-    expect({ theme: await attr('data-theme'), accent: await attr('data-accent') }).toEqual({
-      theme: 'dark',
-      accent: 'teal',
-    })
   })
 })
 
